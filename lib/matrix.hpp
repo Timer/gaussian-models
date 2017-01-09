@@ -66,16 +66,6 @@ public:
   }
 };
 
-std::ostream &operator<<(std::ostream &stream, const Matrix &matrix) {
-  for (auto r = 0; r < matrix.rows; ++r) {
-    for (auto c = 0; c < matrix.cols; ++c) {
-      stream << matrix.data[_matrix_index_for(matrix.rows, r, c)];
-      stream << " ";
-    }
-    stream << "\n";
-  }
-}
-
 SMatrix operator-(const Matrix &m1, const Matrix &m2) {
   assert(m1.rows == m2.rows && m1.cols == m2.cols);
   auto rm = std::make_shared<Matrix>(m1.rows, m1.cols);
