@@ -14,9 +14,9 @@ fi
 echo "... using $CC."
 rm *.out
 $CC $FLAGS -c $(find . -name \*.cpp) -lm
-if [ $OS == "Darwin" ]; then
-  rm benchmark-native.o
-fi
+#if [ $OS == "Darwin" ]; then
+#  rm benchmark-native.o
+#fi
 echo "Building..."
 
 $CC $FLAGS $(find . -name \*.o -not -name scggm.o) -o test.out -lm
