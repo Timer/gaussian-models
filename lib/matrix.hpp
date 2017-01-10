@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -54,6 +55,9 @@ public:
   }
 
   SMatrix mean() const {
+    if (rows == 1) {
+      return transpose()->mean();
+    }
     auto m = std::make_shared<Matrix>(1, cols);
     for (auto r = 0; r < rows; ++r) {
       for (auto c = 0; c < cols; ++c) {
@@ -95,6 +99,38 @@ public:
       }
       return m;
     }
+  }
+
+  double determinant() const {
+    assert(rows == cols);
+    if (rows == 1)
+      return data[0];
+
+    if (rows == 2) {
+      return data[_matrix_index_for(cols, 0, 0)] *
+                 data[_matrix_index_for(cols, 1, 1)] -
+             data[_matrix_index_for(cols, 0, 1)] *
+                 data[_matrix_index_for(cols, 1, 0)];
+    }
+
+    double det = 0;
+    for (int j1 = 0; j1 < rows; ++j1) {
+      Matrix m = Matrix(rows - 1, cols - 1);
+      for (int i = 1; i < rows; ++i) {
+        int j2 = 0;
+        for (int j = 0; j < rows; ++j) {
+          if (j == j1) {
+            continue;
+          }
+          m.data[_matrix_index_for(cols - 1, i - 1, j2)] =
+              data[_matrix_index_for(cols, i, j)];
+          ++j2;
+          det += std::pow(-1.0, 1.0 + j1 + 1.0) *
+                 data[_matrix_index_for(cols, 0, j1)] * m.determinant();
+        }
+      }
+    }
+    return det;
   }
 
   void print() const {

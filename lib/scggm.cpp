@@ -5,12 +5,18 @@
 #include <iostream>
 #include <memory>
 
-void scggm(std::shared_ptr<Matrix> x, std::shared_ptr<Matrix> y, int lambda_1,
-           int lambda_2, scggm_options options) {
+struct scggm_return {
+  scggm_theta Theta;
+  SMatrix intercept;
+};
+
+std::shared_ptr<scggm_return> scggm(std::shared_ptr<Matrix> x,
+                                    std::shared_ptr<Matrix> y, int lambda_1,
+                                    int lambda_2, scggm_options options) {
   int N = x->rows;
   if (N != y->rows) {
     std::cout << "ERR: sample size inconsistent" << std::endl;
-    return;
+    return nullptr;
   }
 
   std::shared_ptr<Matrix> cx, cy;
@@ -35,12 +41,12 @@ void scggm(std::shared_ptr<Matrix> x, std::shared_ptr<Matrix> y, int lambda_1,
   } else {
     Theta = raw_Theta;
   }
-  // TODO
-  /*
-  % return
-  OPT.Theta = Theta;
-  OPT.intercept = mean(y) + mean(x) * (Theta.xy * inv(Theta.yy));
-  */
+
+  std::shared_ptr<scggm_return> OPT = std::make_shared<scggm_return>();
+  OPT->Theta = Theta;
+  // TODO: OPT->intercept = y->mean() + x->mean() * (Theta.xy *
+  // Theta.yy->inverse());
+  return OPT;
 }
 
 int main(int argc, char *argv[]) { return 0; }

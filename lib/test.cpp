@@ -13,6 +13,13 @@ int main(int argc, char *argv[]) {
   double sub1[2][3] = {{-1.5, -1.5, -1.5}, {1.5, 1.5, 1.5}};
   assert((m1 - rep1) == Matrix(sub1));
 
+  int meanB[3][1] = {{1}, {2}, {3}};
+  int mB[1][1] = {{2}};
+  assert(Matrix(meanB).mean() == Matrix(mB));
+  int meanC[1][3] = {{1, 2, 3}};
+  int mC[1][1] = {{2}};
+  assert(Matrix(meanC).mean() == Matrix(mC));
+
   int tranA[3][2] = {{1, 4}, {2, 5}, {3, 6}};
   assert(m1.transpose() == Matrix(tranA));
 
@@ -31,5 +38,8 @@ int main(int argc, char *argv[]) {
                       {10, 11, 12}, {13, 14, 15}, {16, 17, 18}};
   int diag3[3][1] = {{1}, {5}, {9}};
   assert(Matrix(mdiag3).diag() == Matrix(diag3));
+
+  int mDet1[3][3] = {{1, 0, 2}, {-1, 5, 0}, {0, 3, -9}};
+  assert(Matrix(mDet1).determinant() == -51);
   return 0;
 }
