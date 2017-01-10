@@ -18,5 +18,18 @@ int main(int argc, char *argv[]) {
 
   int mulA[3][3] = {{17, 22, 27}, {22, 29, 36}, {27, 36, 45}};
   assert(m1.transpose() * m1 == Matrix(mulA));
+
+  int diag1[3][1] = {{1}, {2}, {3}};
+  int mdiag1[3][3] = {{1, 0, 0}, {0, 2, 0}, {0, 0, 3}};
+  assert(Matrix(diag1).diag() == Matrix(mdiag1));
+  int mdiag2[3][7] = {{1, 2, 3, 4, 5, 6, 7},
+                      {8, 9, 10, 11, 12, 13, 14},
+                      {15, 16, 17, 18, 19, 20, 21}};
+  int diag2[3][1] = {{1}, {9}, {17}};
+  assert(Matrix(mdiag2).diag() == Matrix(diag2));
+  int mdiag3[6][3] = {{1, 2, 3},    {4, 5, 6},    {7, 8, 9},
+                      {10, 11, 12}, {13, 14, 15}, {16, 17, 18}};
+  int diag3[3][1] = {{1}, {5}, {9}};
+  assert(Matrix(mdiag3).diag() == Matrix(diag3));
   return 0;
 }

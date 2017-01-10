@@ -18,6 +18,7 @@ public:
   double *data;
 
   Matrix(int rows, int cols, bool init) {
+    assert(rows > 0 && cols > 0);
     this->rows = rows;
     this->cols = cols;
 
@@ -79,7 +80,24 @@ public:
     return rm;
   }
 
-  void print() {
+  SMatrix diag() const {
+    if (cols == 1) {
+      SMatrix m = std::make_shared<Matrix>(rows, rows);
+      for (int i = 0; i < rows; ++i) {
+        m->data[_matrix_index_for(m->cols, i, i)] = data[i];
+      }
+      return m;
+    } else {
+      int min = std::min(rows, cols);
+      SMatrix m = std::make_shared<Matrix>(min, 1);
+      for (int i = 0; i < min; ++i) {
+        m->data[i] = data[_matrix_index_for(cols, i, i)];
+      }
+      return m;
+    }
+  }
+
+  void print() const {
     for (int r = 0; r < rows; ++r) {
       for (int c = 0; c < cols; ++c) {
         std::cout << data[_matrix_index_for(cols, r, c)] << " ";
