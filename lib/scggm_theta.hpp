@@ -1,12 +1,11 @@
 #include "matrix.hpp"
 #include <memory>
 
-#ifndef SCGGM_THETA
-#define SCGGM_THETA
+#ifndef SCGGM_THETA_HPP
+#define SCGGM_THETA_HPP
 
-class scggm_theta {
-  std::shared_ptr<Matrix> xy = nullptr;
-  std::shared_ptr<Matrix> yy = nullptr;
+struct scggm_theta {
+  SMatrix xy, yy;
 };
 
 #endif
