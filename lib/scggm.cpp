@@ -44,8 +44,7 @@ std::shared_ptr<scggm_return> scggm(std::shared_ptr<Matrix> x,
 
   std::shared_ptr<scggm_return> OPT = std::make_shared<scggm_return>();
   OPT->Theta = Theta;
-  // TODO: OPT->intercept = y->mean() + x->mean() * (Theta.xy *
-  // Theta.yy->inverse());
+  OPT->intercept = y->mean() + x->mean() * (Theta.xy * Theta.yy->inverse());
   return OPT;
 }
 

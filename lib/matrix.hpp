@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <string>
 
@@ -133,6 +134,59 @@ public:
     return det;
   }
 
+  SMatrix cofactor() const {
+    assert(rows == cols);
+    assert(rows > 1);
+    auto b = std::make_shared<Matrix>(rows, cols, false);
+    Matrix c(rows - 1, cols - 1);
+    for (int j = 0; j < cols; ++j) {
+      for (int i = 0; i < rows; ++i) {
+        int i1 = 0;
+        for (int ii = 0; ii < rows; ++ii) {
+          if (ii == i) {
+            continue;
+          }
+          int j1 = 0;
+          for (int jj = 0; jj < rows; ++jj) {
+            if (jj == j) {
+              continue;
+            }
+            c.data[_matrix_index_for(cols - 1, i1, j1)] =
+                data[_matrix_index_for(cols, ii, jj)];
+            ++j1;
+          }
+          ++i1;
+        }
+        b->data[_matrix_index_for(cols, i, j)] =
+            std::pow(-1.0, i + j + 2.0) * c.determinant();
+      }
+    }
+    return b;
+  }
+
+  SMatrix scalar(const double &s) {
+    SMatrix m = std::make_shared<Matrix>(rows, cols, false);
+    for (int i = 0; i < rows * cols; ++i) {
+      m->data[i] = data[i] * s;
+    }
+    return m;
+  }
+
+  SMatrix inverse() const {
+    assert(rows == cols);
+    return cofactor()->transpose()->scalar(1.0 / determinant());
+  }
+
+  bool identity() const {
+    assert(rows == cols);
+    for (int i = 0; i < rows; ++i) {
+      double v = data[_matrix_index_for(cols, i, i)];
+      if (std::abs(1 - v) >= std::numeric_limits<double>::epsilon())
+        return false;
+    }
+    return true;
+  }
+
   void print() const {
     for (int r = 0; r < rows; ++r) {
       for (int c = 0; c < cols; ++c) {
@@ -177,6 +231,23 @@ SMatrix operator*(const SMatrix &m1, const SMatrix &m2) {
 
 SMatrix operator*(const SMatrix &m1, const Matrix &m2) {
   return *m1.get() * m2;
+}
+
+SMatrix operator+(const Matrix &A, const Matrix &B) {
+  assert(A.rows == B.rows && A.cols == B.cols);
+  auto C = std::make_shared<Matrix>(A.rows, A.cols);
+  for (auto i = 0; i < A.rows * A.cols; ++i) {
+    C->data[i] = A.data[i] + B.data[i];
+  }
+  return C;
+}
+
+SMatrix operator+(const SMatrix &m1, const SMatrix &m2) {
+  return *m1.get() + *m2.get();
+}
+
+SMatrix operator+(const SMatrix &m1, const Matrix &m2) {
+  return *m1.get() + m2;
 }
 
 bool operator==(const Matrix &m1, const Matrix &m2) {
