@@ -12,5 +12,11 @@ int main(int argc, char *argv[]) {
   assert(mean1.repeat(2, 1) == rep1);
   double sub1[2][3] = {{-1.5, -1.5, -1.5}, {1.5, 1.5, 1.5}};
   assert((m1 - rep1) == Matrix(sub1));
+
+  int tranA[3][2] = {{1, 4}, {2, 5}, {3, 6}};
+  assert(m1.transpose() == Matrix(tranA));
+
+  int mulA[3][3] = {{17, 22, 27}, {22, 29, 36}, {27, 36, 45}};
+  assert(m1.transpose() * m1 == Matrix(mulA));
   return 0;
 }
