@@ -13,7 +13,7 @@ struct scggm_sparse_obj {
 scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
                                    SMatrix cy, int maxiter, double tol,
                                    bool verbose, double eta,
-                                   scggm_theta &theta0) {
+                                   std::shared_ptr<scggm_theta> theta0) {
   scggm_sparse_obj ret;
   auto transposedCx = cx->transpose();
   auto Sx = transposedCx * cx, Sy = cy->transpose() * cy,
@@ -22,7 +22,7 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
   int nobj = 10;
   int bconv = 0;
   ret.obj = std::make_shared<Matrix>(maxiter, 1);
-  scggm_theta *theta = &theta0;
+  scggm_theta *theta = theta0.get();
   int L = 1;
   double thk_0 = 2.0 / 3.0;
   int ls_maxiter = 300;

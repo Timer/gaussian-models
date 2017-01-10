@@ -11,7 +11,7 @@ struct scggm_options {
   double eta = 1.5;
   bool centered_input = false;
   bool ifrefit = true;
-  scggm_theta *theta = nullptr;
+  std::shared_ptr<scggm_theta> theta0 = nullptr;
 };
 
 #endif
