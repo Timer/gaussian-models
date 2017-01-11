@@ -23,8 +23,8 @@ scggm_theta scggm_soft_threshold(scggm_theta theta, double c1, double c2) {
 
   Byy(pos_idx) = uyy(pos_idx)-c2;
   Byy(neg_idx) = uyy(neg_idx)+c2;
-  Byy = Byy + Byy'-diag(diag(theta.yy));
   */
+  Byy = Byy + Byy->transpose() - theta.yy->diag()->diag();
   B.xy = Bxy;
   B.yy = Byy;
   return B;
