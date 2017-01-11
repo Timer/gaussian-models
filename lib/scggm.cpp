@@ -20,14 +20,14 @@ std::shared_ptr<scggm_return> scggm(std::shared_ptr<Matrix> x,
     return nullptr;
   }
 
-  std::shared_ptr<scggm_theta> Theta0;
+  scggm_theta Theta0;
   if (options.theta0 == nullptr) {
     Theta0 = scggm_initialize(x->cols, y->cols);
   } else {
-    Theta0 = options.theta0;
+    Theta0 = *options.theta0.get();
   }
 
-  std::shared_ptr<Matrix> cx, cy;
+  SMatrix cx, cy;
   if (options.centered_input) {
     cx = x;
     cy = y;
@@ -39,7 +39,7 @@ std::shared_ptr<scggm_return> scggm(std::shared_ptr<Matrix> x,
   auto stepRes = scggm_sparse_step(lambda_1, lambda_2, cx, cy,
                                    options.max_iterations, options.tolerance,
                                    options.verbose, options.eta, Theta0);
-  auto raw_Theta = *stepRes.theta.get();
+  auto raw_Theta = stepRes.theta;
   scggm_theta Theta;
   if (options.ifrefit) {
     auto zero_theta = scggm_zero_index(raw_Theta);

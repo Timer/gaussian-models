@@ -1,13 +1,17 @@
 #include "scggm_theta.hpp"
 
+#ifndef scggm_evaluate_HPP
+#define scggm_evaluate_HPP
+
 struct scggm_evaluate_obj {
-  int value, flag;
+  double value;
+  int flag;
   scggm_theta grad;
 };
 
-scggm_evaluate_obj scggm_evaluate(std::shared_ptr<scggm_theta> theta,
-                                  SMatrix Sx, SMatrix Sxy, SMatrix Sy, int N,
-                                  char gradient, bool verbose) {
+scggm_evaluate_obj scggm_evaluate(scggm_theta theta, SMatrix Sx, SMatrix Sxy,
+                                  SMatrix Sy, int N, char gradient,
+                                  bool verbose) {
   scggm_evaluate_obj ret;
   ret.flag = 0;
 
@@ -58,3 +62,5 @@ scggm_evaluate_obj scggm_evaluate(std::shared_ptr<scggm_theta> theta,
 
   return ret;
 }
+
+#endif
