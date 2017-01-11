@@ -127,6 +127,7 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
   }
   ret.theta = xk;
   /*
+  TODO
   ret.obj   = ret.obj(1:iter);
   */
   return ret;

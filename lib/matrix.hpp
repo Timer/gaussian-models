@@ -240,11 +240,11 @@ public:
     return M;
   }
 
-  void set_position(const int &position, const double &value) { //(0) =>
+  void set_position(const int &position, const double &value) { //(1) =>
     data[_matrix_index_for_position(rows, cols, position)] = value;
   }
 
-  double get_position(const int &position) { //(0)
+  double get_position(const int &position) { //(1)
     return data[_matrix_index_for_position(rows, cols, position)];
   }
 
