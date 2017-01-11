@@ -53,5 +53,8 @@ int main(int argc, char *argv[]) {
   int mSub1[2][3] = {{-3, -3, -3}, {3, 3, 3}};
   assert(Matrix(sumA) + Matrix(sumB) == Matrix(mSum1));
   assert(Matrix(sumA) - Matrix(sumB) == Matrix(mSub1));
+
+  int listCols1[6][1] = {{1}, {4}, {2}, {5}, {3}, {6}};
+  assert(m1.list_elems_by_col() == Matrix(listCols1));
   return 0;
 }

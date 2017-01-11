@@ -195,6 +195,16 @@ public:
     return true;
   }
 
+  SMatrix list_elems_by_col() const {
+    SMatrix M = std::make_shared<Matrix>(rows * cols, 1);
+    for (int c = 0, p = 0; c < cols; ++c) {
+      for (int r = 0; r < rows; ++r) {
+        M->data[p++] = data[_matrix_index_for(cols, r, c)];
+      }
+    }
+    return M;
+  }
+
   void print() const {
     for (int r = 0; r < rows; ++r) {
       for (int c = 0; c < cols; ++c) {
