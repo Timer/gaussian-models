@@ -1,4 +1,5 @@
 #include "matrix.hpp"
+#include "scggm_evaluate.hpp"
 #include "scggm_theta.hpp"
 #include <memory>
 
@@ -22,13 +23,15 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
   int nobj = 10;
   int bconv = 0;
   ret.obj = std::make_shared<Matrix>(maxiter, 1);
-  scggm_theta *theta = theta0.get();
+  auto theta = theta0;
   int L = 1;
   double thk_0 = 2.0 / 3.0;
   int ls_maxiter = 300;
+  scggm_evaluate_obj er = scggm_evaluate(theta, Sx, Sxy, Sy, N, 'n', verbose);
+  auto obj1 = er.value;
+  auto init_flag = er.flag;
   // TODO
   /*
-  [obj1, init_flag]  = scggm_evaluate( theta, Sx, Sxy, Sy, N, 'n', verbose);
   if init_flag == 1 && verbose == true
         fprintf('sCGGM: error! initial Theta_yy not positive definite!\n');
   end
