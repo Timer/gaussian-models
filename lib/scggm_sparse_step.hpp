@@ -75,11 +75,11 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
         xk1_y.yy = xk1.yy - y.yy;
 
         double lfxk1_y = fyk +
-                         (grady.xy->list_elems_by_col()->transpose() *
-                          xk1_y.xy->list_elems_by_col())
+                         (grady.xy->list_elems_col_major()->transpose() *
+                          xk1_y.xy->list_elems_col_major())
                              ->value() +
-                         (grady.yy->list_elems_by_col()->transpose() *
-                          xk1_y.yy->list_elems_by_col())
+                         (grady.yy->list_elems_col_major()->transpose() *
+                          xk1_y.yy->list_elems_col_major())
                              ->value();
         scggm_theta diffxk1y;
         diffxk1y.xy = xk1.xy - y.xy;
@@ -87,8 +87,8 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
         double RHS =
             lfxk1_y +
             L / 2.0 *
-                ((diffxk1y.xy->list_elems_by_col()->power(2))->sumValue() +
-                 (diffxk1y.yy->list_elems_by_col()->power(2))->sumValue());
+                ((diffxk1y.xy->list_elems_col_major()->power(2))->sumValue() +
+                 (diffxk1y.yy->list_elems_col_major()->power(2))->sumValue());
         if (fxk1 <= RHS + tol) {
           xk = xk1;
           zk = zk1;

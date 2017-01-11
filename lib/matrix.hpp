@@ -12,7 +12,13 @@
 class Matrix;
 typedef std::shared_ptr<Matrix> SMatrix;
 
-int _matrix_index_for(int cols, int row, int col) { return row * cols + col; }
+inline int _matrix_index_for(int cols, int row, int col) {
+  return row * cols + col;
+}
+
+inline int _matrix_index_for_col_major_index(int rows, int cols, int position) {
+  return _matrix_index_for(cols, position % rows, position / rows);
+}
 
 class Matrix {
 public:
@@ -217,8 +223,8 @@ public:
     return true;
   }
 
-  // TODO: changes need to propogate
-  SMatrix list_elems_by_col() const { //(:)
+  // TODO: returned matrix changes need to propogate
+  SMatrix list_elems_col_major() const { //(:)
     SMatrix M = std::make_shared<Matrix>(rows * cols, 1);
     for (int c = 0, p = 0; c < cols; ++c) {
       for (int r = 0; r < rows; ++r) {
@@ -226,6 +232,14 @@ public:
       }
     }
     return M;
+  }
+
+  void set_col_major(const int &position, const double &value) { //(0) =>
+    data[_matrix_index_for_col_major_index(rows, cols, position)] = value;
+  }
+
+  double get_col_major(const int &position) { //(0)
+    return data[_matrix_index_for_col_major_index(rows, cols, position)];
   }
 
   void print() const {
