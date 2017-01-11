@@ -56,5 +56,17 @@ int main(int argc, char *argv[]) {
 
   int listCols1[6][1] = {{1}, {4}, {2}, {5}, {3}, {6}};
   assert(m1.list_elems_by_col() == Matrix(listCols1));
+
+  int doubleA[2][3] = {{2, 4, 6}, {8, 10, 12}};
+  assert(m1.scalar(2) == Matrix(doubleA));
+  int subA[2][3] = {{0, 1, 2}, {3, 4, 5}};
+  assert(m1.subtract(1) == Matrix(subA));
+  int powA[2][3] = {{1, 4, 9}, {16, 25, 36}};
+  assert(m1.power(2) == Matrix(powA));
+  int sM[3][1] = {{1}, {2}, {3}};
+  assert(Matrix(sM).sumValue() == 6);
+  int fsM[3][2] = {{1, 2}, {3, 4}, {5, 6}};
+  int singleM[1][1] = {{5}};
+  assert(Matrix(singleM).value() == 5);
   return 0;
 }

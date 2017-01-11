@@ -172,12 +172,34 @@ public:
     return m;
   }
 
+  SMatrix power(const double &s) {
+    SMatrix m = std::make_shared<Matrix>(rows, cols, false);
+    for (int i = 0; i < rows * cols; ++i) {
+      m->data[i] = std::pow(data[i], s);
+    }
+    return m;
+  }
+
   SMatrix subtract(const double &s) {
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = data[i] - s;
     }
     return m;
+  }
+
+  double sumValue() {
+    assert(cols == 1);
+    double d = 0;
+    for (int i = 0; i < rows; ++i) {
+      d += data[i];
+    }
+    return d;
+  }
+
+  double value() {
+    assert(rows == 1 && cols == 1);
+    return data[0];
   }
 
   SMatrix inverse() const {
@@ -195,7 +217,8 @@ public:
     return true;
   }
 
-  SMatrix list_elems_by_col() const {
+  // TODO: changes need to propogate
+  SMatrix list_elems_by_col() const { //(:)
     SMatrix M = std::make_shared<Matrix>(rows * cols, 1);
     for (int c = 0, p = 0; c < cols; ++c) {
       for (int r = 0; r < rows; ++r) {

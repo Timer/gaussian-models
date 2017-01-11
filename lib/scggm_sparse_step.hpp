@@ -26,7 +26,7 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
   int bconv = 0;
   ret.obj = std::make_shared<Matrix>(maxiter, 1);
   auto theta = theta0;
-  int L = 1;
+  double L = 1;
   double thk_0 = 2.0 / 3.0;
   int ls_maxiter = 300;
   scggm_evaluate_obj er = scggm_evaluate(theta, Sx, Sxy, Sy, N, 'n', verbose);
@@ -54,15 +54,15 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
       zk_grady.xy = (zk.xy->subtract(1.0 / (L * thk))) * grady.xy;
       zk_grady.yy = (zk.yy->subtract(1.0 / (L * thk))) * grady.yy;
       // proximal step
-      auto zk1 = scggm_soft_threshold(zk_grady, 2 * lambda1 / (thk * L),
-                                      2 * lambda2 / (thk * L));
+      auto zk1 = scggm_soft_threshold(zk_grady, 2.0 * lambda1 / (thk * L),
+                                      2.0 * lambda2 / (thk * L));
       // gradient step
       scggm_theta y_grady;
       y_grady.xy = y.xy - grady.xy->scalar(1.0 / L);
       y_grady.yy = y.yy - grady.yy->scalar(1.0 / L);
       // proximal step
       auto xk1 =
-          scggm_soft_threshold(y_grady, 2 * lambda1 / (L), 2 * lambda2 / (L));
+          scggm_soft_threshold(y_grady, 2.0 * lambda1 / L, 2.0 * lambda2 / L);
       auto er3 = scggm_evaluate(xk1, Sx, Sxy, Sy, N, 'n', verbose);
       auto fxk1 = er3.value;
       auto flagxk1 = er3.flag;
@@ -73,20 +73,28 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
         scggm_theta xk1_y;
         xk1_y.xy = xk1.xy - y.xy;
         xk1_y.yy = xk1.yy - y.yy;
-        /*
-        lfxk1_y     = fyk + grady.xy(:)'* (xk1_y.xy(:)) +
-grady.yy(:)'*(xk1_y.yy(:));
+
+        double lfxk1_y = fyk +
+                         (grady.xy->list_elems_by_col()->transpose() *
+                          xk1_y.xy->list_elems_by_col())
+                             ->value() +
+                         (grady.yy->list_elems_by_col()->transpose() *
+                          xk1_y.yy->list_elems_by_col())
+                             ->value();
+        scggm_theta diffxk1y;
         diffxk1y.xy = xk1.xy - y.xy;
         diffxk1y.yy = xk1.yy - y.yy;
-        RHS         = lfxk1_y + L/2 *(sum(diffxk1y.xy(:).^2) +
-sum(diffxk1y.yy(:).^2));
-        if fxk1 <= RHS + tol
-                xk = xk1;
-                zk = zk1;
-                bconv = 1;
-                break; % line search converged
-        end
-*/
+        double RHS =
+            lfxk1_y +
+            L / 2.0 *
+                ((diffxk1y.xy->list_elems_by_col()->power(2))->sumValue() +
+                 (diffxk1y.yy->list_elems_by_col()->power(2))->sumValue());
+        if (fxk1 <= RHS + tol) {
+          xk = xk1;
+          zk = zk1;
+          bconv = 1;
+          break; // line search converged
+        }
       }
       ++ik;
       if (ik > ls_maxiter) {
