@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
   assert(Matrix(sumA) - Matrix(sumB) == Matrix(mSub1));
 
   int listCols1[6][1] = {{1}, {4}, {2}, {5}, {3}, {6}};
-  assert(m1.list_elems_col_major() == Matrix(listCols1));
+  assert(m1.list_elems_by_position() == Matrix(listCols1));
 
   int doubleA[2][3] = {{2, 4, 6}, {8, 10, 12}};
   assert(m1.scalar(2) == Matrix(doubleA));
@@ -71,12 +71,12 @@ int main(int argc, char *argv[]) {
   int singleM[1][1] = {{5}};
   assert(Matrix(singleM).value() == 5);
 
-  // TODO: test set_col_major
-  assert(m1.get_col_major(0) == 1);
-  assert(m1.get_col_major(1) == 4);
-  assert(m1.get_col_major(2) == 2);
-  assert(m1.get_col_major(3) == 5);
-  assert(m1.get_col_major(4) == 3);
-  assert(m1.get_col_major(5) == 6);
+  // TODO: test set_position
+  assert(m1.get_position(1) == 1);
+  assert(m1.get_position(2) == 4);
+  assert(m1.get_position(3) == 2);
+  assert(m1.get_position(4) == 5);
+  assert(m1.get_position(5) == 3);
+  assert(m1.get_position(6) == 6);
   return 0;
 }

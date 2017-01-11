@@ -36,7 +36,7 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
   if (init_flag == 1 && verbose) {
     puts("sCGGM: error! initial Theta_yy not positive definite!");
   }
-  ret.obj->set_col_major(0, obj1 + scggm_penalty(theta, lambda1, lambda2));
+  ret.obj->set_position(1, obj1 + scggm_penalty(theta, lambda1, lambda2));
   auto xk = theta, zk = theta;
   double thk = thk_0;
   for (int iter = 2; iter <= maxiter; ++iter) {
@@ -77,11 +77,11 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
         xk1_y.yy = xk1.yy - y.yy;
 
         double lfxk1_y = fyk +
-                         (grady.xy->list_elems_col_major()->transpose() *
-                          xk1_y.xy->list_elems_col_major())
+                         (grady.xy->list_elems_by_position()->transpose() *
+                          xk1_y.xy->list_elems_by_position())
                              ->value() +
-                         (grady.yy->list_elems_col_major()->transpose() *
-                          xk1_y.yy->list_elems_col_major())
+                         (grady.yy->list_elems_by_position()->transpose() *
+                          xk1_y.yy->list_elems_by_position())
                              ->value();
         scggm_theta diffxk1y;
         diffxk1y.xy = xk1.xy - y.xy;
@@ -89,8 +89,8 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
         double RHS =
             lfxk1_y +
             L / 2.0 *
-                ((diffxk1y.xy->list_elems_col_major()->power(2))->sumValue() +
-                 (diffxk1y.yy->list_elems_col_major()->power(2))->sumValue());
+                ((diffxk1y.xy->list_elems_by_position()->power(2))->sumValue() +
+                 (diffxk1y.yy->list_elems_by_position()->power(2))->sumValue());
         if (fxk1 <= RHS + tol) {
           xk = xk1;
           zk = zk1;
@@ -110,14 +110,13 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
       }
       L = L * eta;
     }
-    ret.obj->set_col_major(iter - 1,
-                           fxk1 + scggm_penalty(xk, lambda1, lambda2));
+    ret.obj->set_position(iter, fxk1 + scggm_penalty(xk, lambda1, lambda2));
     if (bconv == 0) {
       break;
     }
     if (iter > nobj + 1) {
-      double value = ret.obj->get_col_major(iter - 1);
-      double prevVals = ret.obj->get_col_major(iter - nobj - 1);
+      double value = ret.obj->get_position(iter);
+      double prevVals = ret.obj->get_position(iter - nobj);
       double avgimprovement = std::abs(prevVals - value) / nobj;
       double relAvgImpr = avgimprovement / std::abs(value);
       if (relAvgImpr < tol) {

@@ -16,8 +16,8 @@ inline int _matrix_index_for(int cols, int row, int col) {
   return row * cols + col;
 }
 
-inline int _matrix_index_for_col_major_index(int rows, int cols, int position) {
-  return _matrix_index_for(cols, position % rows, position / rows);
+inline int _matrix_index_for_position(int rows, int cols, int position) {
+  return _matrix_index_for(cols, (position - 1) % rows, (position - 1) / rows);
 }
 
 class Matrix {
@@ -232,22 +232,20 @@ public:
   }
 
   // TODO: returned matrix changes need to propogate
-  SMatrix list_elems_col_major() const { //(:)
+  SMatrix list_elems_by_position() const { //(:)
     SMatrix M = std::make_shared<Matrix>(rows * cols, 1);
-    for (int c = 0, p = 0; c < cols; ++c) {
-      for (int r = 0; r < rows; ++r) {
-        M->data[p++] = data[_matrix_index_for(cols, r, c)];
-      }
+    for (int p = 1; p <= rows * cols; ++p) {
+      M->data[p - 1] = data[_matrix_index_for_position(rows, cols, p)];
     }
     return M;
   }
 
-  void set_col_major(const int &position, const double &value) { //(0) =>
-    data[_matrix_index_for_col_major_index(rows, cols, position)] = value;
+  void set_position(const int &position, const double &value) { //(0) =>
+    data[_matrix_index_for_position(rows, cols, position)] = value;
   }
 
-  double get_col_major(const int &position) { //(0)
-    return data[_matrix_index_for_col_major_index(rows, cols, position)];
+  double get_position(const int &position) { //(0)
+    return data[_matrix_index_for_position(rows, cols, position)];
   }
 
   void print() const {
