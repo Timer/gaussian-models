@@ -1,5 +1,6 @@
 #include "matrix.hpp"
 #include "scggm_evaluate.hpp"
+#include "scggm_penalty.hpp"
 #include "scggm_soft_threshold.hpp"
 #include "scggm_theta.hpp"
 #include <cstdio>
@@ -35,7 +36,7 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
   if (init_flag == 1 && verbose) {
     puts("sCGGM: error! initial Theta_yy not positive definite!");
   }
-  // TODO: obj(1) = obj1 + scggm_penalty(theta, lambda1, lambda2);
+  ret.obj->set_col_major(0, obj1 + scggm_penalty(theta, lambda1, lambda2));
   auto xk = theta, zk = theta;
   double thk = thk_0;
   for (int iter = 2; iter <= maxiter; ++iter) {
@@ -48,6 +49,7 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
     int flagy = er2.flag;
     auto grady = er2.grad;
     int ik = 0;
+    double fxk1 = 0.0;
     while (true) {
       // gradient step
       scggm_theta zk_grady;
@@ -64,7 +66,7 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
       auto xk1 =
           scggm_soft_threshold(y_grady, 2.0 * lambda1 / L, 2.0 * lambda2 / L);
       auto er3 = scggm_evaluate(xk1, Sx, Sxy, Sy, N, 'n', verbose);
-      auto fxk1 = er3.value;
+      fxk1 = er3.value;
       auto flagxk1 = er3.flag;
       // TODO:  [~, flagzk1]    = chol(zk1.yy);
       int flagzk1 = 0; // TODO: remove
@@ -108,18 +110,16 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
       }
       L = L * eta;
     }
-    // TODO: obj(iter)  = fxk1 + scggm_penalty( xk, lambda1, lambda2);
+    ret.obj->set_col_major(iter - 1,
+                           fxk1 + scggm_penalty(xk, lambda1, lambda2));
     if (bconv == 0) {
       break;
     }
     if (iter > nobj + 1) {
-      /*
-      value           = obj(iter);
-      prevVals        = obj(iter - nobj);
-      avgimprovement  = abs( prevVals - value )/nobj;
-      relAvgImpr      = avgimprovement / abs( value ) ;
-      */
-      double relAvgImpr; // TODO: remove
+      double value = ret.obj->get_col_major(iter - 1);
+      double prevVals = ret.obj->get_col_major(iter - nobj - 1);
+      double avgimprovement = std::abs(prevVals - value) / nobj;
+      double relAvgImpr = avgimprovement / std::abs(value);
       if (relAvgImpr < tol) {
         bconv = 1;
         break;

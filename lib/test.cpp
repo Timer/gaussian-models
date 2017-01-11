@@ -40,7 +40,9 @@ int main(int argc, char *argv[]) {
   assert(Matrix(mdiag3).diag() == Matrix(diag3));
 
   int mDet1[3][3] = {{1, 0, 2}, {-1, 5, 0}, {0, 3, -9}};
+  int abs_mDet1[3][3] = {{1, 0, 2}, {1, 5, 0}, {0, 3, 9}};
   assert(Matrix(mDet1).determinant() == -51);
+  assert(Matrix(mDet1).abs() == Matrix(abs_mDet1));
 
   int mDet2[3][3] = {{1, 2, 0}, {-1, 1, 1}, {1, 2, 3}};
   assert(Matrix(mDet2).determinant() == 9);

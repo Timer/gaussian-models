@@ -194,6 +194,14 @@ public:
     return m;
   }
 
+  SMatrix abs() {
+    SMatrix m = std::make_shared<Matrix>(rows, cols, false);
+    for (int i = 0; i < rows * cols; ++i) {
+      m->data[i] = std::abs(data[i]);
+    }
+    return m;
+  }
+
   double sumValue() {
     assert(cols == 1);
     double d = 0;
