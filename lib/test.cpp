@@ -50,6 +50,8 @@ int main(int argc, char *argv[]) {
   assert((Matrix(mDet2).inverse() * Matrix(mDet2))->identity());
   int sumA[2][3] = {{1, 2, 3}, {4, 5, 6}}, sumB[2][3] = {{4, 5, 6}, {1, 2, 3}};
   int mSum1[2][3] = {{5, 7, 9}, {5, 7, 9}};
+  int mSub1[2][3] = {{-3, -3, -3}, {3, 3, 3}};
   assert(Matrix(sumA) + Matrix(sumB) == Matrix(mSum1));
+  assert(Matrix(sumA) - Matrix(sumB) == Matrix(mSub1));
   return 0;
 }

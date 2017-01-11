@@ -172,6 +172,14 @@ public:
     return m;
   }
 
+  SMatrix subtract(const double &s) {
+    SMatrix m = std::make_shared<Matrix>(rows, cols, false);
+    for (int i = 0; i < rows * cols; ++i) {
+      m->data[i] = data[i] - s;
+    }
+    return m;
+  }
+
   SMatrix inverse() const {
     assert(rows == cols);
     return cofactor()->transpose()->scalar(1.0 / determinant());
