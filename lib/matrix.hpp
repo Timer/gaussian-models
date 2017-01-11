@@ -20,6 +20,13 @@ inline int _matrix_index_for_position(int rows, int cols, int position) {
   return _matrix_index_for(cols, (position - 1) % rows, (position - 1) / rows);
 }
 
+struct Cholesky {
+  SMatrix matrix;
+  int error = 0;
+};
+
+bool operator==(const SMatrix &m1, const Matrix &m2);
+
 class Matrix {
 public:
   int rows, cols;
@@ -244,8 +251,42 @@ public:
     data[_matrix_index_for_position(rows, cols, position)] = value;
   }
 
-  double get_position(const int &position) { //(1)
+  double get_position(const int &position) const { //(1)
     return data[_matrix_index_for_position(rows, cols, position)];
+  }
+
+  Cholesky cholesky() const {
+    assert(rows == cols);
+    assert(transpose() == *this);
+    // TODO: check for positive definite
+
+    Cholesky ch;
+    ch.error = 0;
+    ch.matrix = std::make_shared<Matrix>(rows, cols);
+
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c <= r; c++) {
+        if (c == r) {
+          double sum = 0;
+          for (int j = 0; j < c; j++) {
+            sum += pow(ch.matrix->data[_matrix_index_for(cols, c, j)], 2);
+          }
+          ch.matrix->data[_matrix_index_for(cols, c, c)] =
+              sqrt(data[_matrix_index_for(cols, c, c)] - sum);
+        } else {
+          double sum = 0;
+          for (int j = 0; j < c; j++)
+            sum += ch.matrix->data[_matrix_index_for(cols, r, j)] *
+                   ch.matrix->data[_matrix_index_for(cols, c, j)];
+          ch.matrix->data[_matrix_index_for(cols, r, c)] =
+              1.0 / ch.matrix->data[_matrix_index_for(cols, c, c)] *
+              (data[_matrix_index_for(cols, r, c)] - sum);
+        }
+      }
+    }
+    // TODO: more efficient
+    ch.matrix = ch.matrix->transpose();
+    return ch;
   }
 
   void print() const {

@@ -78,5 +78,9 @@ int main(int argc, char *argv[]) {
   assert(m1.get_position(4) == 5);
   assert(m1.get_position(5) == 3);
   assert(m1.get_position(6) == 6);
+
+  int pM1[3][3] = {{1, -1, -1}, {-1, 2, 0}, {-1, 0, 3}};
+  int cM1[3][3] = {{1, -1, -1}, {0, 1, -1}, {0, 0, 1}};
+  assert(Matrix(pM1).cholesky().matrix == Matrix(cM1));
   return 0;
 }
