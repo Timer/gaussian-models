@@ -7,6 +7,7 @@
 scggm_theta scggm_initialize(int J, int K) {
   scggm_theta Theta0;
   assert(false); // Not yet implemented!
+  //TODO
   if (K <= 100) {
     // Ai = sprandsym(K,0.01);
     // Theta0.xy = sprand( J, K, 0.01 );

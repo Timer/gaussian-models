@@ -16,6 +16,7 @@ scggm_evaluate_obj scggm_evaluate(scggm_theta theta, SMatrix Sx, SMatrix Sxy,
   ret.flag = 0;
 
   /*
+  TODO
   [ cyy, p ]  = chol(theta.yy);
 
   if ( p > 0 )
