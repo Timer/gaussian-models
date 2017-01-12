@@ -34,9 +34,10 @@ public:
   double *data;
 
   Matrix(int rows, int cols, bool init) {
-    assert(rows > 0 && cols > 0);
     this->rows = rows;
     this->cols = cols;
+    if (rows == 0 || cols == 0)
+      return;
 
     data = new double[rows * cols];
     if (init) {
@@ -272,6 +273,79 @@ public:
         return false;
     }
     return true;
+  }
+
+private:
+  int compare_rows(int row_a, int row_b) const {
+    for (int col = 0; col < cols; ++col) {
+      int va = data[_matrix_index_for(cols, row_a, col)],
+          vb = data[_matrix_index_for(cols, row_b, col)];
+      if (va < vb)
+        return -1;
+      else if (va > vb)
+        return 1;
+    }
+    return 0;
+  }
+
+  void swap_rows(int row_a, int row_b) {
+    for (int col = 0; col < cols; ++col) {
+      int i = _matrix_index_for(cols, row_a, col),
+          i2 = _matrix_index_for(cols, row_b, col);
+      double temp = data[i];
+      data[i] = data[i2];
+      data[i2] = temp;
+    }
+  }
+
+  SMatrix sort_rows() const {
+    SMatrix M = std::make_shared<Matrix>(*this);
+    for (int row = 0; row < rows - 1; ++row) {
+      int minRow = row;
+      for (int cRow = row + 1; cRow < rows; ++cRow) {
+        if (M->compare_rows(cRow, minRow) < 0) {
+          minRow = cRow;
+        }
+      }
+      if (minRow != row) {
+        M->swap_rows(minRow, row);
+      }
+    }
+    return M;
+  }
+
+public:
+  SMatrix unique_rows() const {
+    SMatrix S = sort_rows();
+    SMatrix C = std::make_shared<Matrix>(rows, cols, false);
+    int cRow = 0;
+    for (int row = 0; row < rows; ++row) {
+      bool set = cRow == 0;
+      if (!set) {
+        for (int c = 0; c < cols; ++c) {
+          if (C->data[_matrix_index_for(cols, cRow - 1, c)] !=
+              S->data[_matrix_index_for(cols, row, c)]) {
+            set = true;
+            break;
+          }
+        }
+      }
+      if (set) {
+        for (int col = 0; col < cols; ++col) {
+          C->data[_matrix_index_for(cols, cRow, col)] =
+              S->data[_matrix_index_for(cols, row, col)];
+        }
+        ++cRow;
+      }
+    }
+    SMatrix T = std::make_shared<Matrix>(cRow, cols, false);
+    for (int row = 0; row < cRow; ++row) {
+      for (int col = 0; col < cols; ++col) {
+        T->data[_matrix_index_for(cols, row, col)] =
+            C->data[_matrix_index_for(cols, row, col)];
+      }
+    }
+    return T;
   }
 
   // TODO: returned matrix changes need to propogate
