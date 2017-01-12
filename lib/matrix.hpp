@@ -194,6 +194,14 @@ public:
     return m;
   }
 
+  SMatrix add(const double &s) const {
+    SMatrix m = std::make_shared<Matrix>(rows, cols, false);
+    for (int i = 0; i < rows * cols; ++i) {
+      m->data[i] = data[i] + s;
+    }
+    return m;
+  }
+
   SMatrix subtract(const double &s) const {
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {

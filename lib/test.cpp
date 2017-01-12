@@ -63,6 +63,8 @@ int main(int argc, char *argv[]) {
   assert(m1.scalar(2) == Matrix(doubleA));
   int subA[2][3] = {{0, 1, 2}, {3, 4, 5}};
   assert(m1.subtract(1) == Matrix(subA));
+  int addA[2][3] = {{2, 3, 4}, {5, 6, 7}};
+  assert(m1.add(1) == Matrix(addA));
   int powA[2][3] = {{1, 4, 9}, {16, 25, 36}};
   assert(m1.power(2) == Matrix(powA));
   int sM[3][1] = {{1}, {2}, {3}};
