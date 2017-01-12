@@ -1,50 +1,36 @@
+#include <cmath>
+#include <random>
+
 #ifndef sparfun_HPP
 #define sparfun_HPP
 
-//   R = SPRANDSYM(n,density) is a symmetric random, n-by-n, sparse
-//       matrix with approximately density*n*n nonzeros; each entry is
-//       the sum of one or more normally distributed random samples.
-// http://opg1.ucsd.edu/~sio221/SIO_221A_2009/SIO_221_Data/Matlab5/Toolbox/matlab/sparfun/sprandsym.m
-SMatrix sprandsym(int arg1, double density) {
-  /*
-  n = arg1;
-  nl = round( (n*(n+1)/2) * density );
-  rands = randn( nl, 1 );
-  ii = fix( rand(nl, 1) * n ) + 1;
-  jj = fix( rand(nl, 1) * n ) + 1;
-  di = find( ii == jj );
-  off = find( ii ~= jj );
-  nd = length( di );
-  no = length( off );
-  randi = rands( 1:nd );
-  rando = rands( nd+1 : nl );
-  i = [ii(off); jj(off); ii(di)];
-  j = [jj(off); ii(off); ii(di)];
-  r = [rando; rando; randi];
-  R = sparse(i,j,r,n,n);
-  */
+SMatrix sprandsym(int n, double density) {
+  std::random_device rd;
+  std::mt19937 generator(rd());
+  std::uniform_int_distribution<int> pos(0, n - 1);
+  std::normal_distribution<double> distribution;
+  SMatrix M = std::make_shared<Matrix>(n, n);
+  for (int count = 0; count < std::round(n * (n + 1) * std::min(density, 1.0));
+       ++count) {
+    int r = pos(generator), c = pos(generator);
+    M->data[_matrix_index_for(n, c, r)] = M->data[_matrix_index_for(n, r, c)] =
+        distribution(generator);
+  }
+  return M;
 }
 
-//   R = SPRAND(m,n,density) is a random, m-by-n, sparse matrix with
-//       approximately density*m*n uniformly distributed nonzero entries.
-//       SPRAND is designed to produce large matrices with small density
-//       and will generate significantly fewer nonzeros than requested
-//       if m*n is small or density is large.
-// http://opg1.ucsd.edu/~sio221/SIO_221A_2009/SIO_221_Data/Matlab5/Toolbox/matlab/sparfun/sprand.m
-SMatrix sprand(int arg1, int n, double density) {
-  /*
-  m = arg1;
-  nnzwanted = round(m * n * min(density,1));
-  i = fix( rand(nnzwanted, 1) * m ) + 1;
-  j = fix( rand(nnzwanted, 1) * n ) + 1;
-  ij = unique([i j],'rows');
-  if ~isempty(ij)
-     i = ij(:,1);
-     j = ij(:,2);
-  end
-  rands = rand( length(i), 1 );
-  R = sparse(i,j,rands,m,n);
-  */
+SMatrix sprand(int m, int n, double density) {
+  std::random_device rd;
+  std::mt19937 generator(rd());
+  std::uniform_real_distribution<double> distribution(0.0, 1.0);
+  auto nnzwanted = std::round(m * n * std::min(density, 1.0));
+  SMatrix i = std::make_shared<Matrix>(m, n);
+  for (auto count = 0; count < nnzwanted; ++count) {
+    int r = std::floor(distribution(generator) * m);
+    int c = std::floor(distribution(generator) * n);
+    i->data[_matrix_index_for(n, r, c)] = distribution(generator);
+  }
+  return i;
 }
 
 #endif
