@@ -177,7 +177,7 @@ public:
     return b;
   }
 
-  SMatrix scalar(const double &s) {
+  SMatrix scalar(const double &s) const {
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = data[i] * s;
@@ -185,7 +185,7 @@ public:
     return m;
   }
 
-  SMatrix power(const double &s) {
+  SMatrix power(const double &s) const {
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = std::pow(data[i], s);
@@ -193,7 +193,7 @@ public:
     return m;
   }
 
-  SMatrix subtract(const double &s) {
+  SMatrix subtract(const double &s) const {
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = data[i] - s;
@@ -201,7 +201,7 @@ public:
     return m;
   }
 
-  SMatrix abs() {
+  SMatrix abs() const {
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = std::abs(data[i]);
@@ -209,7 +209,15 @@ public:
     return m;
   }
 
-  double sumValue() {
+  SMatrix log() const {
+    SMatrix m = std::make_shared<Matrix>(rows, cols, false);
+    for (int i = 0; i < rows * cols; ++i) {
+      m->data[i] = std::log(data[i]);
+    }
+    return m;
+  }
+
+  double sumValue() const {
     assert(cols == 1);
     double d = 0;
     for (int i = 0; i < rows; ++i) {
@@ -218,7 +226,9 @@ public:
     return d;
   }
 
-  double value() {
+  double trace() const { return diag()->sumValue(); }
+
+  double value() const {
     assert(rows == 1 && cols == 1);
     return data[0];
   }
