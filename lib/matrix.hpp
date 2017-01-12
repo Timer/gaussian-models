@@ -307,6 +307,27 @@ public:
     }
   }
 
+  void set_positions(SMatrix list, SMatrix source) const { // A(list) = B(list)
+    assert(list->cols == 1);
+    assert(rows == source->rows && cols == source->cols);
+    for (int index = 0; index < list->rows; ++index) {
+      int p = list->data[index];
+      data[_matrix_index_for_position(rows, cols, p)] =
+          source->data[_matrix_index_for_position(rows, cols, p)];
+    }
+  }
+
+  void set_positions(SMatrix list, SMatrix source,
+                     double delta) const { // A(list) = B(list) + delta
+    assert(list->cols == 1);
+    assert(rows == source->rows && cols == source->cols);
+    for (int index = 0; index < list->rows; ++index) {
+      int p = list->data[index];
+      data[_matrix_index_for_position(rows, cols, p)] =
+          source->data[_matrix_index_for_position(rows, cols, p)] + delta;
+    }
+  }
+
   void set_position(const int &position, const double &value) { //(1) =>
     data[_matrix_index_for_position(rows, cols, position)] = value;
   }

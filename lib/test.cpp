@@ -110,5 +110,14 @@ int main(int argc, char *argv[]) {
   assert(Matrix(nPD1).find_positions(4, true, false) == Matrix(find3));
   int find4[6][1] = {{2}, {3}, {5}, {6}, {8}, {9}};
   assert(Matrix(nPD1).find_positions(4, true, true) == Matrix(find4));
+
+  int nPD3[3][3] = {{9, 8, 7}, {6, 5, 4}, {3, 2, 1}};
+  auto tmLSM = Matrix(nPD1);
+  auto list = tmLSM.find_positions(4, false, false);
+  int nPD4[3][3] = {{8, 7, 6}, {4, 5, 6}, {7, 8, 9}};
+  tmLSM.set_positions(list, Matrix(nPD3).subtract(1));
+  assert(tmLSM == Matrix(nPD4));
+  tmLSM.set_positions(list, std::make_shared<Matrix>(nPD3), -1);
+  assert(tmLSM == Matrix(nPD4));
   return 0;
 }
