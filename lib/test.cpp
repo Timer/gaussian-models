@@ -1,4 +1,5 @@
 #include "matrix.hpp"
+#include "sparfun.hpp"
 #include <cassert>
 #include <iostream>
 
@@ -132,5 +133,12 @@ int main(int argc, char *argv[]) {
   assert(m1.triu(3) == Matrix(triu3));
   int triu1_2[3][3] = {{0, 2, 3}, {0, 0, 6}, {0, 0, 0}};
   assert(Matrix(nPD1).triu(1) == Matrix(triu1_2));
+
+  int eye1[3][4] = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}};
+  assert(eye(3, 4) == Matrix(eye1));
+  int eye2[4][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0, 0, 0}};
+  assert(eye(4, 3) == Matrix(eye2));
+  int eye3[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+  assert(eye(3, 3) == Matrix(eye3));
   return 0;
 }

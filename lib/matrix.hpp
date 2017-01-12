@@ -409,6 +409,14 @@ public:
   }
 };
 
+SMatrix eye(int rows, int cols) {
+  auto M = std::make_shared<Matrix>(rows, cols);
+  for (int p = 0; p < std::min(rows, cols); ++p) {
+    M->data[_matrix_index_for(cols, p, p)] = 1;
+  }
+  return M;
+}
+
 SMatrix operator-(const Matrix &m1, const Matrix &m2) {
   assert(m1.rows == m2.rows && m1.cols == m2.cols);
   auto rm = std::make_shared<Matrix>(m1.rows, m1.cols);
