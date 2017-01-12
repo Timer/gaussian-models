@@ -226,7 +226,10 @@ public:
     return d;
   }
 
-  double trace() const { return diag()->sumValue(); }
+  double trace() const {
+    assert(rows == cols);
+    return diag()->sumValue();
+  }
 
   double value() const {
     assert(rows == 1 && cols == 1);
