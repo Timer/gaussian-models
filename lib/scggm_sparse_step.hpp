@@ -38,7 +38,8 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
   ret.obj->set_position(1, obj1 + scggm_penalty(theta, lambda1, lambda2));
   auto xk = theta, zk = theta;
   double thk = thk_0;
-  for (int iter = 2; iter <= maxiter; ++iter) {
+  int iter;
+  for (iter = 2; iter <= maxiter; ++iter) {
     thk = (sqrt(pow(thk, 4) + 4 * pow(thk, 2)) - pow(thk, 2)) / 2.0;
     scggm_theta y;
     y.xy = xk.xy->scalar(1 - thk) + zk.xy->scalar(thk);
@@ -121,10 +122,7 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
     }
   }
   ret.theta = xk;
-  /*
-  TODO
-  ret.obj   = ret.obj(1:iter);
-  */
+  ret.obj = ret.obj->row_elems_by_position(1, iter);
   return ret;
 }
 
