@@ -260,6 +260,16 @@ public:
     return M;
   }
 
+  // TODO: returned matrix changes need to propogate
+  SMatrix row_elems_by_position(int start, int end) const { //(start:end)
+    SMatrix M = std::make_shared<Matrix>(1, end - start + 1);
+    int index = 0;
+    for (int p = start; p <= end; ++p) {
+      M->data[index++] = data[_matrix_index_for_position(rows, cols, p)];
+    }
+    return M;
+  }
+
   void set_position(const int &position, const double &value) { //(1) =>
     data[_matrix_index_for_position(rows, cols, position)] = value;
   }

@@ -92,5 +92,8 @@ int main(int argc, char *argv[]) {
   int lT1[2][2] = {{1, 2}, {3, 4}};
   double lmT2[2][2] = {{std::log(1), std::log(2)}, {std::log(3), std::log(4)}};
   assert(Matrix(lT1).log() == Matrix(lmT2));
+
+  int rebp1[1][4] = {{4, 7, 2, 5}};
+  assert(Matrix(nPD1).row_elems_by_position(2, 5) == Matrix(rebp1));
   return 0;
 }
