@@ -3,25 +3,29 @@
 #include "scggm_refit_step.hpp"
 #include "scggm_sparse_step.hpp"
 #include "scggm_zero_index.hpp"
-#include <iostream>
+#include <cstdio>
 #include <memory>
 
 struct scggm_return {
+  bool error = false;
   scggm_theta Theta;
   SMatrix intercept;
 };
 
-std::shared_ptr<scggm_return> scggm(std::shared_ptr<Matrix> x,
-                                    std::shared_ptr<Matrix> y, int lambda_1,
-                                    int lambda_2, scggm_options &options) {
+scggm_return scggm(std::shared_ptr<Matrix> x, std::shared_ptr<Matrix> y,
+                   int lambda_1, int lambda_2, scggm_options &options) {
+  scggm_return OPT;
   int N = x->rows;
   if (N != y->rows) {
-    std::cout << "ERR: sample size inconsistent" << std::endl;
-    return nullptr;
+    OPT.error = true;
+    puts("ERR: sample size inconsistent");
+    return OPT;
   }
 
   scggm_theta Theta0;
   if (options.theta0 == nullptr) {
+    if (options.verbose)
+      puts("Generating theta0 ... ");
     Theta0 = scggm_initialize(x->cols, y->cols);
   } else {
     Theta0 = *options.theta0.get();
@@ -32,6 +36,8 @@ std::shared_ptr<scggm_return> scggm(std::shared_ptr<Matrix> x,
     cx = x;
     cy = y;
   } else {
+    if (options.verbose)
+      puts("Centering input ...");
     cy = y - y->mean()->repeat(N, 1);
     cx = x - x->mean()->repeat(N, 1);
   }
@@ -51,10 +57,7 @@ std::shared_ptr<scggm_return> scggm(std::shared_ptr<Matrix> x,
     Theta = raw_Theta;
   }
 
-  std::shared_ptr<scggm_return> OPT = std::make_shared<scggm_return>();
-  OPT->Theta = Theta;
-  OPT->intercept = y->mean() + x->mean() * (Theta.xy * Theta.yy->inverse());
+  OPT.Theta = Theta;
+  OPT.intercept = y->mean() + x->mean() * (Theta.xy * Theta.yy->inverse());
   return OPT;
 }
-
-int main(int argc, char *argv[]) { return 0; }

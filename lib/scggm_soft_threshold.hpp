@@ -3,7 +3,8 @@
 #ifndef scggm_soft_threshold_HPP
 #define scggm_soft_threshold_HPP
 
-scggm_theta scggm_soft_threshold(scggm_theta theta, double c1, double c2) {
+scggm_theta scggm_soft_threshold(scggm_theta theta, double c1, double c2,
+                                 bool verbose) {
   scggm_theta B;
   SMatrix Bxy = std::make_shared<Matrix>(theta.xy->rows, theta.xy->cols);
   auto pos_idx =

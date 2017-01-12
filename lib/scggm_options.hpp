@@ -7,7 +7,7 @@
 struct scggm_options {
   int max_iterations = 1000;
   double tolerance = 1e-7;
-  bool verbose = false;
+  bool verbose = true;
   double eta = 1.5;
   bool centered_input = false;
   bool ifrefit = true;

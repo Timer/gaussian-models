@@ -52,18 +52,18 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
     while (true) {
       // gradient step
       scggm_theta zk_grady;
-      zk_grady.xy = (zk.xy->subtract(1.0 / (L * thk))) * grady.xy;
-      zk_grady.yy = (zk.yy->subtract(1.0 / (L * thk))) * grady.yy;
+      zk_grady.xy = y.xy - grady.xy->scalar(1.0 / (thk * L));
+      zk_grady.yy = y.yy - grady.yy->scalar(1.0 / (thk * L));
       // proximal step
       auto zk1 = scggm_soft_threshold(zk_grady, 2.0 * lambda1 / (thk * L),
-                                      2.0 * lambda2 / (thk * L));
+                                      2.0 * lambda2 / (thk * L), verbose);
       // gradient step
       scggm_theta y_grady;
       y_grady.xy = y.xy - grady.xy->scalar(1.0 / L);
       y_grady.yy = y.yy - grady.yy->scalar(1.0 / L);
       // proximal step
-      auto xk1 =
-          scggm_soft_threshold(y_grady, 2.0 * lambda1 / L, 2.0 * lambda2 / L);
+      auto xk1 = scggm_soft_threshold(y_grady, 2.0 * lambda1 / L,
+                                      2.0 * lambda2 / L, verbose);
       auto er3 = scggm_evaluate(xk1, Sx, Sxy, Sy, N, 'n', verbose);
       fxk1 = er3.value;
       if (!zk1.yy->cholesky().error && !er2.error &&
