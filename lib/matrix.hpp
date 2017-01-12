@@ -22,7 +22,7 @@ inline int _matrix_index_for_position(int rows, int cols, int position) {
 
 struct Cholesky {
   SMatrix matrix;
-  int error = 0;
+  bool error = false;
 };
 
 bool operator==(const SMatrix &m1, const Matrix &m2);
@@ -257,12 +257,16 @@ public:
 
   Cholesky cholesky() const {
     assert(rows == cols);
-    assert(transpose() == *this);
-    // TODO: check for positive definite
 
     Cholesky ch;
-    ch.error = 0;
     ch.matrix = std::make_shared<Matrix>(rows, cols);
+
+    if (transpose() == *this) {
+      ch.error = false;
+    } else {
+      ch.error = true;
+      return ch;
+    }
 
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c <= r; c++) {
@@ -282,6 +286,12 @@ public:
               1.0 / ch.matrix->data[_matrix_index_for(cols, c, c)] *
               (data[_matrix_index_for(cols, r, c)] - sum);
         }
+      }
+    }
+    for (int i = 0; i < rows * cols; ++i) {
+      if (std::isnan(ch.matrix->data[i])) {
+        ch.error = true;
+        break;
       }
     }
     // TODO: more efficient

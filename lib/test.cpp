@@ -82,5 +82,11 @@ int main(int argc, char *argv[]) {
   int pM1[3][3] = {{1, -1, -1}, {-1, 2, 0}, {-1, 0, 3}};
   int cM1[3][3] = {{1, -1, -1}, {0, 1, -1}, {0, 0, 1}};
   assert(Matrix(pM1).cholesky().matrix == Matrix(cM1));
+
+  int nPD1[3][3] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+  assert(Matrix(nPD1).cholesky().error);
+
+  int nPD2[3][3] = {{1, 2, 3}, {2, 3, 3}, {3, 3, 3}};
+  assert(Matrix(nPD2).cholesky().error);
   return 0;
 }
