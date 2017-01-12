@@ -57,6 +57,12 @@ public:
     }
   }
 
+  Matrix(const Matrix &matrix) : Matrix(matrix.rows, matrix.cols, false) {
+    for (int i = 0; i < rows * cols; ++i) {
+      data[i] = matrix.data[i];
+    }
+  }
+
   ~Matrix() { delete[] data; }
 
   SMatrix transpose() const {
