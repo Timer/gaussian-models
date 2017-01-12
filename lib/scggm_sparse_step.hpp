@@ -32,8 +32,7 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
   int ls_maxiter = 300;
   scggm_evaluate_obj er = scggm_evaluate(theta, Sx, Sxy, Sy, N, 'n', verbose);
   auto obj1 = er.value;
-  auto init_flag = er.flag;
-  if (init_flag == 1 && verbose) {
+  if (er.error == 1 && verbose) {
     puts("sCGGM: error! initial Theta_yy not positive definite!");
   }
   ret.obj->set_position(1, obj1 + scggm_penalty(theta, lambda1, lambda2));
@@ -46,7 +45,6 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
     y.yy = xk.yy->scalar(1 - thk) + zk.yy->scalar(thk);
     auto er2 = scggm_evaluate(y, Sx, Sxy, Sy, N, 'y', verbose);
     double fyk = er2.value;
-    int flagy = er2.flag;
     auto grady = er2.grad;
     int ik = 0;
     double fxk1 = 0.0;
@@ -67,11 +65,8 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
           scggm_soft_threshold(y_grady, 2.0 * lambda1 / L, 2.0 * lambda2 / L);
       auto er3 = scggm_evaluate(xk1, Sx, Sxy, Sy, N, 'n', verbose);
       fxk1 = er3.value;
-      auto flagxk1 = er3.flag;
-      // TODO:  [~, flagzk1]    = chol(zk1.yy);
-      int flagzk1 = 0; // TODO: remove
-      if (flagzk1 == 0 && flagy == 0 &&
-          flagxk1 == 0) { // xk1, zk1, y all positive definite
+      if (!zk1.yy->cholesky().error && !er2.error &&
+          !er3.error) { // xk1, zk1, y all positive definite
         scggm_theta xk1_y;
         xk1_y.xy = xk1.xy - y.xy;
         xk1_y.yy = xk1.yy - y.yy;
