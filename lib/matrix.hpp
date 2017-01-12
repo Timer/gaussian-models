@@ -1,9 +1,12 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <streambuf>
 #include <string>
 #include <vector>
 
@@ -34,14 +37,17 @@ public:
   double *data;
 
   Matrix(int rows, int cols, bool init) {
-    assert(rows > 0 && cols > 0);
+    assert(rows >= 0 && cols >= 0);
     this->rows = rows;
     this->cols = cols;
-
-    data = new double[rows * cols];
-    if (init) {
-      for (auto i = 0; i < rows * cols; ++i) {
-        data[i] = 0;
+    if (rows == 0 || cols == 0)
+      data = nullptr;
+    else {
+      data = new double[rows * cols];
+      if (init) {
+        for (auto i = 0; i < rows * cols; ++i) {
+          data[i] = 0;
+        }
       }
     }
   }
@@ -497,5 +503,42 @@ bool operator==(const Matrix &m1, const Matrix &m2) {
 }
 
 bool operator==(const SMatrix &m1, const Matrix &m2) { return *m1.get() == m2; }
+
+std::vector<std::string> split(const std::string &s, const std::string &delim,
+                               const bool keep_empty = false) {
+  std::vector<std::string> result;
+  if (delim.empty()) {
+    result.push_back(s);
+    return result;
+  }
+  std::string::const_iterator substart = s.begin(), subend;
+  while (true) {
+    subend = std::search(substart, s.end(), delim.begin(), delim.end());
+    std::string temp(substart, subend);
+    if (keep_empty || !temp.empty()) {
+      result.push_back(temp);
+    }
+    if (subend == s.end()) {
+      break;
+    }
+    substart = subend + delim.size();
+  }
+  return result;
+}
+SMatrix load(std::string path) {
+  std::ifstream t(path);
+  std::string str((std::istreambuf_iterator<char>(t)),
+                  std::istreambuf_iterator<char>());
+  std::vector<std::string> rows = split(str, "\n");
+  int colC = split(rows[0], "\t").size();
+  SMatrix M = std::make_shared<Matrix>(rows.size(), colC);
+  for (int r = 0; r < rows.size(); ++r) {
+    auto cols = split(rows[r], "\t");
+    for (int c = 0; c < colC; ++c) {
+      M->data[_matrix_index_for(colC, r, c)] = stod(cols[c]);
+    }
+  }
+  return M;
+}
 
 #endif

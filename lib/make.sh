@@ -19,6 +19,7 @@ $CC $FLAGS -c $(find . -name \*.cpp) -lm
 #fi
 echo "Building..."
 
-$CC $FLAGS $(find . -name \*.o -not -name scggm.o) -o test.out -lm
-$CC $FLAGS $(find . -name \*.o -not -name test.o) -o scggm.out -lm
+$CC $FLAGS $(find . -name \*.o -not -name demo_cv.o -not -name demo.o) -o test.out -lm
+$CC $FLAGS $(find . -name \*.o -not -name test.o -not -name demo.o) -o demo_cv.out -lm
+$CC $FLAGS $(find . -name \*.o -not -name demo_cv.o -not -name test.o) -o demo.out -lm
 rm $(find . -name \*.o)
