@@ -232,6 +232,14 @@ public:
     return m;
   }
 
+  SMatrix floor() const {
+    SMatrix m = std::make_shared<Matrix>(rows, cols, false);
+    for (int i = 0; i < rows * cols; ++i) {
+      m->data[i] = std::floor(data[i]);
+    }
+    return m;
+  }
+
   double sumValue() const {
     assert(cols == 1);
     double d = 0;
