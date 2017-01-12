@@ -270,6 +270,13 @@ public:
     return M;
   }
 
+  void set_positions(SMatrix list, const double &value) const { //(list) = value
+    assert(list->cols == 1);
+    for (int index = 0; index < list->rows; ++index) {
+      data[_matrix_index_for_position(rows, cols, list->data[index])] = value;
+    }
+  }
+
   void set_position(const int &position, const double &value) { //(1) =>
     data[_matrix_index_for_position(rows, cols, position)] = value;
   }

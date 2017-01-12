@@ -95,5 +95,11 @@ int main(int argc, char *argv[]) {
 
   int rebp1[1][4] = {{4, 7, 2, 5}};
   assert(Matrix(nPD1).row_elems_by_position(2, 5) == Matrix(rebp1));
+
+  int setex[3][1] = {{1}, {4}, {8}};
+  int exset[3][3] = {{0, 0, 3}, {4, 5, 0}, {7, 8, 9}};
+  auto tempM = Matrix(nPD1);
+  tempM.set_positions(std::make_shared<Matrix>(setex), 0);
+  assert(tempM == Matrix(exset));
   return 0;
 }
