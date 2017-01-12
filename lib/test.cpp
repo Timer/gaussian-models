@@ -88,5 +88,9 @@ int main(int argc, char *argv[]) {
 
   int nPD2[3][3] = {{1, 2, 3}, {2, 3, 3}, {3, 3, 3}};
   assert(Matrix(nPD2).cholesky().error);
+
+  int lT1[2][2] = {{1, 2}, {3, 4}};
+  double lmT2[2][2] = {{std::log(1), std::log(2)}, {std::log(3), std::log(4)}};
+  assert(Matrix(lT1).log() == Matrix(lmT2));
   return 0;
 }
