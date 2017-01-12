@@ -30,8 +30,9 @@ scggm_evaluate_obj scggm_evaluate(scggm_theta theta, SMatrix Sx, SMatrix Sxy,
 
   double logdetyy = 2.0 * cyy->diag()->log()->sumValue();
   if (std::isnan(logdetyy) || std::isinf(logdetyy)) {
-    if (verbose)
+    if (verbose) {
       puts("sCGGM: logdet Theta_yy is Nan or Inf!");
+    }
     ret.error = true;
     ret.value = std::numeric_limits<double>::infinity();
     ret.grad = theta;

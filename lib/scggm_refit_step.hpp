@@ -24,11 +24,9 @@ scggm_refit_obj scggm_refit_step(SMatrix cx, SMatrix cy, scggm_theta &z_theta,
 
   auto theta = Theta0;
   auto bconv = 0;
-  /*
-  TODO
-  theta.xy(z_theta.xy) = 0;
-  theta.yy(z_theta.yy) = 0; % constrain the sparsity pattern of the variable
-  */
+  theta.xy->set_positions(z_theta.xy, 0);
+  theta.yy->set_positions(z_theta.yy,
+                          0); // constrain the sparsity pattern of the variable
   ret.obj = std::make_shared<Matrix>(max_iterations, 1);
   double L = 1.0;
   auto nobj = 10;
@@ -60,11 +58,8 @@ scggm_refit_obj scggm_refit_step(SMatrix cx, SMatrix cy, scggm_theta &z_theta,
     auto flagy = se.error;
     auto grady = se.grad;
     // compute the objective and gradient for y
-    /*
-    TODO
-    grady.xy(z_theta.xy) = 0;
-    grady.yy(z_theta.yy) = 0;
-    */
+    grady.xy->set_positions(z_theta.xy, 0);
+    grady.yy->set_positions(z_theta.yy, 0);
 
     // line search
     auto ik = 0;
