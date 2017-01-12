@@ -121,5 +121,16 @@ int main(int argc, char *argv[]) {
   assert(tmLSM == Matrix(nPD4));
   tmLSM.set_positions(list, std::make_shared<Matrix>(nPD3), -1);
   assert(tmLSM == Matrix(nPD4));
+
+  int triu0[2][3] = {{1, 2, 3}, {0, 5, 6}};
+  assert(m1.triu(0) == Matrix(triu0));
+  int triu1[2][3] = {{0, 2, 3}, {0, 0, 6}};
+  assert(m1.triu(1) == Matrix(triu1));
+  int triu2[2][3] = {{0, 0, 3}, {0, 0, 0}};
+  assert(m1.triu(2) == Matrix(triu2));
+  int triu3[2][3] = {{0, 0, 0}, {0, 0, 0}};
+  assert(m1.triu(3) == Matrix(triu3));
+  int triu1_2[3][3] = {{0, 2, 3}, {0, 0, 6}, {0, 0, 0}};
+  assert(Matrix(nPD1).triu(1) == Matrix(triu1_2));
   return 0;
 }

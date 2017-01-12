@@ -344,6 +344,17 @@ public:
     return data[_matrix_index_for_position(rows, cols, position)];
   }
 
+  SMatrix triu(int kdiag) {
+    auto M = std::make_shared<Matrix>(rows, cols, true);
+    for (int r = 0; r < rows; ++r) {
+      for (int c = kdiag + r; c < cols; ++c) {
+        M->data[_matrix_index_for(cols, r, c)] =
+            data[_matrix_index_for(cols, r, c)];
+      }
+    }
+    return M;
+  }
+
   Cholesky cholesky() const {
     assert(rows == cols);
 

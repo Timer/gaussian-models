@@ -13,11 +13,7 @@ scggm_theta scggm_soft_threshold(scggm_theta theta, double c1, double c2) {
   Bxy->set_positions(pos_idx, theta.xy, -c1);
   Bxy->set_positions(neg_idx, theta.xy, c1);
   SMatrix Byy = theta.yy->diag()->diag();
-  /*
-  TODO
-  uyy = triu( theta.yy,1 );
-  */
-  SMatrix uyy; // TODO: remove
+  auto uyy = theta.yy->triu(1);
   pos_idx = uyy->list_elems_by_position()->find_positions(c2, true, false);
   neg_idx = uyy->list_elems_by_position()->find_positions(-c2, false, false);
   Byy->set_positions(pos_idx, uyy, -c2);
