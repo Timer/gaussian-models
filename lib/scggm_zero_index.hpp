@@ -5,14 +5,10 @@
 
 scggm_theta scggm_zero_index(scggm_theta &theta, int eps) {
   scggm_theta nz_theta = scggm_theta();
-  // TODO
-  /*
-  idsxy = find(abs(theta.xy)<=eps);
-  idsyy = find(abs(theta.yy)<=eps);
-
+  auto idsxy = theta.xy->abs()->find_positions(eps, false, true);
+  auto idsyy = theta.yy->abs()->find_positions(eps, false, true);
   nz_theta.xy = idsxy;
   nz_theta.yy = idsyy;
-  */
   return nz_theta;
 }
 
