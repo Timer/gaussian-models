@@ -101,5 +101,14 @@ int main(int argc, char *argv[]) {
   auto tempM = Matrix(nPD1);
   tempM.set_positions(std::make_shared<Matrix>(setex), 0);
   assert(tempM == Matrix(exset));
+
+  int find1[3][1] = {{1}, {4}, {7}};
+  assert(Matrix(nPD1).find_positions(4, false, false) == Matrix(find1));
+  int find2[4][1] = {{1}, {2}, {4}, {7}};
+  assert(Matrix(nPD1).find_positions(4, false, true) == Matrix(find2));
+  int find3[5][1] = {{3}, {5}, {6}, {8}, {9}};
+  assert(Matrix(nPD1).find_positions(4, true, false) == Matrix(find3));
+  int find4[6][1] = {{2}, {3}, {5}, {6}, {8}, {9}};
+  assert(Matrix(nPD1).find_positions(4, true, true) == Matrix(find4));
   return 0;
 }

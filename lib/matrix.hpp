@@ -5,6 +5,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <vector>
 
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
@@ -267,6 +268,35 @@ public:
     for (int p = start; p <= end; ++p) {
       M->data[index++] = data[_matrix_index_for_position(rows, cols, p)];
     }
+    return M;
+  }
+
+  SMatrix find_positions(const double &alpha, const bool greater,
+                         const bool equal) {
+    std::vector<int> positions;
+    for (int p = 1; p <= rows * cols; ++p) {
+      auto value = data[_matrix_index_for_position(rows, cols, p)];
+      if (greater) {
+        if (equal) {
+          if (value >= alpha)
+            positions.push_back(p);
+        } else {
+          if (value > alpha)
+            positions.push_back(p);
+        }
+      } else {
+        if (equal) {
+          if (value <= alpha)
+            positions.push_back(p);
+        } else {
+          if (value < alpha)
+            positions.push_back(p);
+        }
+      }
+    }
+    SMatrix M = std::make_shared<Matrix>(positions.size(), 1);
+    for (int i = 0; i < M->rows; ++i)
+      M->data[i] = positions[i];
     return M;
   }
 
