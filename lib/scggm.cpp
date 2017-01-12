@@ -43,9 +43,10 @@ std::shared_ptr<scggm_return> scggm(std::shared_ptr<Matrix> x,
   scggm_theta Theta;
   if (options.ifrefit) {
     auto zero_theta = scggm_zero_index(raw_Theta);
-    Theta = scggm_refit_step(cx, cy, zero_theta, options.max_iterations,
-                             options.tolerance, options.verbose, options.eta,
-                             raw_Theta);
+    auto sro = scggm_refit_step(cx, cy, zero_theta, options.max_iterations,
+                                options.tolerance, options.verbose, options.eta,
+                                raw_Theta);
+    Theta = sro.Theta;
   } else {
     Theta = raw_Theta;
   }
