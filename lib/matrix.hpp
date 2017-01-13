@@ -16,6 +16,8 @@
 class Matrix;
 typedef std::shared_ptr<Matrix> SMatrix;
 
+SMatrix eye(int rows, int cols);
+
 inline int _matrix_index_for(int cols, int row, int col) {
   return row * cols + col;
 }
@@ -70,6 +72,17 @@ public:
   }
 
   ~Matrix() { delete[] data; }
+
+  SMatrix copy(std::vector<int> r, int j0, int j1) const {
+    SMatrix X = std::make_shared<Matrix>(r.size(), j1 - j0 + 1, false);
+    for (int i = 0; i < r.size(); i++) {
+      for (int j = j0; j <= j1; j++) {
+        X->data[_matrix_index_for(X->cols, i, j - j0)] =
+            data[_matrix_index_for(cols, r[i], j)];
+      }
+    }
+    return X;
+  }
 
   SMatrix transpose() const {
     auto m = std::make_shared<Matrix>(cols, rows, false);
@@ -126,68 +139,6 @@ public:
       }
       return m;
     }
-  }
-
-  double determinant() const {
-    assert(rows == cols);
-    if (rows == 1)
-      return data[0];
-
-    if (rows == 2) {
-      return data[_matrix_index_for(cols, 0, 0)] *
-                 data[_matrix_index_for(cols, 1, 1)] -
-             data[_matrix_index_for(cols, 0, 1)] *
-                 data[_matrix_index_for(cols, 1, 0)];
-    }
-
-    double det = 0;
-    for (int j1 = 0; j1 < rows; ++j1) {
-      Matrix m = Matrix(rows - 1, cols - 1);
-      for (int i = 1; i < rows; ++i) {
-        int j2 = 0;
-        for (int j = 0; j < rows; ++j) {
-          if (j == j1) {
-            continue;
-          }
-          m.data[_matrix_index_for(cols - 1, i - 1, j2)] =
-              data[_matrix_index_for(cols, i, j)];
-          ++j2;
-          det += std::pow(-1.0, 1.0 + j1 + 1.0) *
-                 data[_matrix_index_for(cols, 0, j1)] * m.determinant();
-        }
-      }
-    }
-    return det;
-  }
-
-  SMatrix cofactor() const {
-    assert(rows == cols);
-    assert(rows > 1);
-    auto b = std::make_shared<Matrix>(rows, cols, false);
-    Matrix c(rows - 1, cols - 1);
-    for (int j = 0; j < cols; ++j) {
-      for (int i = 0; i < rows; ++i) {
-        int i1 = 0;
-        for (int ii = 0; ii < rows; ++ii) {
-          if (ii == i) {
-            continue;
-          }
-          int j1 = 0;
-          for (int jj = 0; jj < rows; ++jj) {
-            if (jj == j) {
-              continue;
-            }
-            c.data[_matrix_index_for(cols - 1, i1, j1)] =
-                data[_matrix_index_for(cols, ii, jj)];
-            ++j1;
-          }
-          ++i1;
-        }
-        b->data[_matrix_index_for(cols, i, j)] =
-            std::pow(-1.0, i + j + 2.0) * c.determinant();
-      }
-    }
-    return b;
   }
 
   SMatrix scalar(const double &s) const {
@@ -265,9 +216,108 @@ public:
     return data[0];
   }
 
+private:
+  bool isLUNonsingular() const {
+    assert(rows == cols);
+    for (int j = 0; j < cols; j++) {
+      if (data[_matrix_index_for(cols, j, j)] == 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+public:
   SMatrix inverse() const {
     assert(rows == cols);
-    return cofactor()->transpose()->scalar(1.0 / determinant());
+    auto LU = std::make_shared<Matrix>(*this);
+    int m = rows, n = cols;
+    std::vector<int> piv;
+    for (auto i = 0; i < m; ++i) {
+      piv.push_back(i);
+    }
+    int pivsign = 1;
+    // Outer loop.
+    for (int j = 0; j < n; j++) {
+      // Make a copy of the j-th column to localize references.
+      std::vector<double> LUcolj;
+      for (int i = 0; i < m; i++) {
+        LUcolj.push_back(LU->data[_matrix_index_for(n, i, j)]);
+      }
+
+      // Apply previous transformations.
+      for (int i = 0; i < m; i++) {
+
+        // Most of the time is spent in the following dot product.
+
+        int kmax = std::min(i, j);
+        double s = 0.0;
+        for (int k = 0; k < kmax; k++) {
+          s += LU->data[_matrix_index_for(n, i, k)] * LUcolj[k];
+        }
+
+        LU->data[_matrix_index_for(n, i, j)] = LUcolj[i] -= s;
+      }
+
+      // Find pivot and exchange if necessary.
+
+      int p = j;
+      for (int i = j + 1; i < m; i++) {
+        if (std::abs(LUcolj[i]) > std::abs(LUcolj[p])) {
+          p = i;
+        }
+      }
+      if (p != j) {
+        for (int k = 0; k < n; k++) {
+          double t = LU->data[_matrix_index_for(n, p, k)];
+          LU->data[_matrix_index_for(n, p, k)] =
+              LU->data[_matrix_index_for(n, j, k)];
+          LU->data[_matrix_index_for(n, j, k)] = t;
+        }
+        int k = piv[p];
+        piv[p] = piv[j];
+        piv[j] = k;
+        pivsign = -pivsign;
+      }
+
+      // Compute multipliers.
+      if (j < m & LU->data[_matrix_index_for(n, j, j)] != 0.0) {
+        for (int i = j + 1; i < m; i++) {
+          LU->data[_matrix_index_for(n, i, j)] /=
+              LU->data[_matrix_index_for(n, j, j)];
+        }
+      }
+    }
+    assert(isLUNonsingular());
+
+    int nx = cols;
+    auto X = eye(rows, cols)->copy(piv, 0, nx - 1);
+
+    // Solve L*Y = B(piv,:)
+    for (int k = 0; k < n; k++) {
+      for (int i = k + 1; i < n; i++) {
+        for (int j = 0; j < nx; j++) {
+          X->data[_matrix_index_for(X->cols, i, j)] -=
+              X->data[_matrix_index_for(X->cols, k, j)] *
+              LU->data[_matrix_index_for(LU->cols, i, k)];
+        }
+      }
+    }
+    // Solve U*X = Y;
+    for (int k = n - 1; k >= 0; k--) {
+      for (int j = 0; j < nx; j++) {
+        X->data[_matrix_index_for(X->cols, k, j)] /=
+            LU->data[_matrix_index_for(LU->cols, k, k)];
+      }
+      for (int i = 0; i < k; i++) {
+        for (int j = 0; j < nx; j++) {
+          X->data[_matrix_index_for(X->cols, i, j)] -=
+              X->data[_matrix_index_for(X->cols, k, j)] *
+              LU->data[_matrix_index_for(LU->cols, i, k)];
+        }
+      }
+    }
+    return X;
   }
 
   bool identity() const {

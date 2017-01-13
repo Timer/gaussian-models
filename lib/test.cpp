@@ -42,14 +42,9 @@ int main(int argc, char *argv[]) {
 
   int mDet1[3][3] = {{1, 0, 2}, {-1, 5, 0}, {0, 3, -9}};
   int abs_mDet1[3][3] = {{1, 0, 2}, {1, 5, 0}, {0, 3, 9}};
-  assert(Matrix(mDet1).determinant() == -51);
   assert(Matrix(mDet1).abs() == Matrix(abs_mDet1));
 
   int mDet2[3][3] = {{1, 2, 0}, {-1, 1, 1}, {1, 2, 3}};
-  assert(Matrix(mDet2).determinant() == 9);
-  int cF2[3][3] = {{1, 4, -3}, {-6, 3, -0}, {2, -1, 3}};
-  assert(Matrix(mDet2).cofactor() == Matrix(cF2));
-  int ident2[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
   assert((Matrix(mDet2).inverse() * Matrix(mDet2))->identity());
   int sumA[2][3] = {{1, 2, 3}, {4, 5, 6}}, sumB[2][3] = {{4, 5, 6}, {1, 2, 3}};
   int mSum1[2][3] = {{5, 7, 9}, {5, 7, 9}};
