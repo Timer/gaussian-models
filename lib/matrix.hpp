@@ -489,7 +489,7 @@ SMatrix eye(int rows, int cols) {
 
 SMatrix operator-(const Matrix &m1, const Matrix &m2) {
   assert(m1.rows == m2.rows && m1.cols == m2.cols);
-  auto rm = std::make_shared<Matrix>(m1.rows, m1.cols);
+  auto rm = std::make_shared<Matrix>(m1.rows, m1.cols, false);
   for (auto i = 0; i < m1.rows * m2.cols; ++i) {
     rm->data[i] = m1.data[i] - m2.data[i];
   }
@@ -525,7 +525,7 @@ SMatrix operator*(const SMatrix &m1, const Matrix &m2) {
 
 SMatrix operator+(const Matrix &A, const Matrix &B) {
   assert(A.rows == B.rows && A.cols == B.cols);
-  auto C = std::make_shared<Matrix>(A.rows, A.cols);
+  auto C = std::make_shared<Matrix>(A.rows, A.cols, false);
   for (auto i = 0; i < A.rows * A.cols; ++i) {
     C->data[i] = A.data[i] + B.data[i];
   }
@@ -581,7 +581,7 @@ SMatrix load(std::string path) {
                   std::istreambuf_iterator<char>());
   std::vector<std::string> rows = split(str, "\n");
   int colC = split(rows[0], "\t").size();
-  SMatrix M = std::make_shared<Matrix>(rows.size(), colC);
+  SMatrix M = std::make_shared<Matrix>(rows.size(), colC, false);
   for (int r = 0; r < rows.size(); ++r) {
     auto cols = split(rows[r], "\t");
     for (int c = 0; c < colC; ++c) {
