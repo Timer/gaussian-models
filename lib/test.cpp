@@ -135,5 +135,10 @@ int main(int argc, char *argv[]) {
   assert(eye(4, 3) == Matrix(eye2));
   int eye3[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
   assert(eye(3, 3) == Matrix(eye3));
+
+  int listColMatrix[3][4] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}};
+  int listColResult[3][1] = {{2}, {6}, {10}};
+  assert(Matrix(listColMatrix).list_elems_by_column_position(2) ==
+         Matrix(listColResult));
   return 0;
 }

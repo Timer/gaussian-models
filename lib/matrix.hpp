@@ -340,6 +340,17 @@ public:
   }
 
   // TODO: returned matrix changes need to propogate
+  SMatrix list_elems_by_column_position(int col) const { //(:, col)
+    assert(col > 0 && col <= cols);
+    col -= 1;
+    SMatrix M = std::make_shared<Matrix>(rows, 1);
+    for (int r = 0; r < rows; ++r) {
+      M->data[r] = data[_matrix_index_for(cols, r, col)];
+    }
+    return M;
+  }
+
+  // TODO: returned matrix changes need to propogate
   SMatrix row_elems_by_position(int start, int end) const { //(start:end)
     SMatrix M = std::make_shared<Matrix>(1, end - start + 1);
     int index = 0;

@@ -6,7 +6,8 @@
 
 SMatrix scggm_indirect_SNP_decompose(scggm_theta Theta, int k) {
   auto iThetayy = Theta.yy->inverse();
-  // TODO: Beta_k = - Theta.xy(:,k) * iThetayy(:,k)';
+  return Theta.xy->list_elems_by_column_position(k)->scalar(-1) *
+         iThetayy->list_elems_by_column_position(k)->transpose();
 }
 
 #endif
