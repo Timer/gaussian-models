@@ -32,8 +32,9 @@ scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
   int ls_maxiter = 300;
   scggm_evaluate_obj er = scggm_evaluate(theta, Sx, Sxy, Sy, N, 'n', verbose);
   auto obj1 = er.value;
-  if (er.error == 1 && verbose) {
+  if (er.error && verbose) {
     puts("sCGGM: error! initial Theta_yy not positive definite!");
+    throw 1;
   }
   ret.obj->set_position(1, obj1 + scggm_penalty(theta, lambda1, lambda2));
   auto xk = theta, zk = theta;

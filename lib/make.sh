@@ -2,7 +2,7 @@
 cd $(dirname "$0")
 CC=g++
 OS=`uname`
-FLAGS="-std=c++11"
+FLAGS="-std=c++11 -O3"
 if command -v clang-format >/dev/null 2>&1; then
   echo "Linting..."
   clang-format -i *.cpp *.hpp

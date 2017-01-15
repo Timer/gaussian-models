@@ -42,13 +42,21 @@ scggm_return scggm(std::shared_ptr<Matrix> x, std::shared_ptr<Matrix> y,
     cx = x - x->mean()->repeat(N, 1);
   }
 
+  if (options.verbose)
+    puts("Calculating sparse step ...");
   auto stepRes = scggm_sparse_step(lambda_1, lambda_2, cx, cy,
                                    options.max_iterations, options.tolerance,
                                    options.verbose, options.eta, Theta0);
   auto raw_Theta = stepRes.theta;
   scggm_theta Theta;
   if (options.ifrefit) {
+    if (options.verbose)
+      puts("Finding zero index ...");
     auto zero_theta = scggm_zero_index(raw_Theta);
+    if (options.verbose) {
+      printf("%d %d\n", zero_theta.xy->rows, zero_theta.yy->rows);
+      puts("Refitting ...");
+    }
     auto sro = scggm_refit_step(cx, cy, zero_theta, options.max_iterations,
                                 options.tolerance, options.verbose, options.eta,
                                 raw_Theta);

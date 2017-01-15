@@ -39,6 +39,7 @@ scggm_refit_obj scggm_refit_step(SMatrix cx, SMatrix cy, scggm_theta &z_theta,
   auto init_flag = se.error;
   if (init_flag && verbose) {
     puts("sCGGM: error! refit initial Theta_yy not positive definite!");
+    throw 1;
   }
 
   ret.obj->set_position(1, obj1);

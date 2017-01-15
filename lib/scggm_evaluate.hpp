@@ -19,7 +19,7 @@ scggm_evaluate_obj scggm_evaluate(scggm_theta theta, SMatrix Sx, SMatrix Sxy,
   Cholesky ch = theta.yy->cholesky();
   auto cyy = ch.matrix;
   if (ch.error) {
-    if (gradient == 'y' && verbose) {
+    if (verbose) {
       puts("sCGGM: Theta_yy not positive definite!");
     }
     ret.error = true;
