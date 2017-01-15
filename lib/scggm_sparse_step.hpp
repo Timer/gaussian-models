@@ -14,7 +14,7 @@ struct scggm_sparse_obj {
   SMatrix obj;
 };
 
-scggm_sparse_obj scggm_sparse_step(int lambda1, int lambda2, SMatrix cx,
+scggm_sparse_obj scggm_sparse_step(double lambda1, double lambda2, SMatrix cx,
                                    SMatrix cy, int maxiter, double tol,
                                    bool verbose, double eta,
                                    scggm_theta theta0) {

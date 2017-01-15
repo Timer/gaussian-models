@@ -13,7 +13,7 @@ struct scggm_return {
 };
 
 scggm_return scggm(std::shared_ptr<Matrix> x, std::shared_ptr<Matrix> y,
-                   int lambda_1, int lambda_2, scggm_options &options) {
+                   double lambda_1, double lambda_2, scggm_options &options) {
   scggm_return OPT;
   int N = x->rows;
   if (N != y->rows) {
