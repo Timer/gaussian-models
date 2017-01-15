@@ -54,8 +54,7 @@ scggm_return scggm(std::shared_ptr<Matrix> x, std::shared_ptr<Matrix> y,
       puts("Finding zero index ...");
     auto zero_theta = scggm_zero_index(raw_Theta);
     if (options.verbose) {
-      printf("%d %d\n", zero_theta.xy->rows, zero_theta.yy->rows);
-      puts("Refitting ...");
+      printf("Refitting (%d %d)\n", zero_theta.xy->rows, zero_theta.yy->rows);
     }
     auto sro = scggm_refit_step(cx, cy, zero_theta, options.max_iterations,
                                 options.tolerance, options.verbose, options.eta,
