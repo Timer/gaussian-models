@@ -513,17 +513,22 @@ SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
 
 SMatrix operator*(const Matrix &A, const Matrix &B) {
   assert(A.cols == B.rows);
-  auto C = std::make_shared<Matrix>(A.rows, B.cols);
-  for (auto r = 0; r < C->rows; ++r) {
-    for (auto c = 0; c < C->cols; ++c) {
-      for (auto inner = 0; inner < A.cols; ++inner) {
-        C->data[_matrix_index_for(C->cols, r, c)] +=
-            A.data[_matrix_index_for(A.cols, r, inner)] *
-            B.data[_matrix_index_for(B.cols, inner, c)];
+  auto X = std::make_shared<Matrix>(A.rows, B.cols);
+  double *Bcolj = new double[A.cols];
+  for (int j = 0; j < B.cols; j++) {
+    for (int k = 0; k < A.cols; k++) {
+      Bcolj[k] = B.data[_matrix_index_for(B.cols, k, j)];
+    }
+    for (int i = 0; i < A.rows; i++) {
+      double s = 0;
+      for (int k = 0; k < A.cols; k++) {
+        s += A.data[_matrix_index_for(A.cols, i, k)] * Bcolj[k];
       }
+      X->data[_matrix_index_for(X->cols, i, j)] = s;
     }
   }
-  return C;
+  delete[] Bcolj;
+  return X;
 }
 
 SMatrix operator*(const SMatrix &m1, const SMatrix &m2) {
