@@ -448,10 +448,10 @@ public:
       for (int k = 0; k < j; k++) {
         double s = 0.0;
         for (int i = 0; i < k; i++) {
-          s += ch.matrix->data[_matrix_index_for(cols, k, i)] *
-               ch.matrix->data[_matrix_index_for(cols, j, i)];
+          s += ch.matrix->data[_matrix_index_for(cols, i, k)] *
+               ch.matrix->data[_matrix_index_for(cols, i, j)];
         }
-        ch.matrix->data[_matrix_index_for(cols, j, k)] = s =
+        ch.matrix->data[_matrix_index_for(cols, k, j)] = s =
             (data[_matrix_index_for(cols, j, k)] - s) /
             ch.matrix->data[_matrix_index_for(cols, k, k)];
         d = d + s * s;
@@ -463,11 +463,10 @@ public:
       ch.matrix->data[_matrix_index_for(cols, j, j)] =
           std::sqrt(std::max(d, 0.0));
       for (int k = j + 1; k < n; k++) {
-        ch.matrix->data[_matrix_index_for(cols, j, k)] = 0.0;
+        ch.matrix->data[_matrix_index_for(cols, k, j)] = 0.0;
       }
     }
     ch.error = !isspd;
-    ch.matrix = ch.matrix->transpose();
     return ch;
   }
 
