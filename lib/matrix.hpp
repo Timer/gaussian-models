@@ -1,3 +1,4 @@
+#include <Accelerate/Accelerate.h>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -513,22 +514,10 @@ SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
 
 SMatrix operator*(const Matrix &A, const Matrix &B) {
   assert(A.cols == B.rows);
-  auto X = std::make_shared<Matrix>(A.rows, B.cols);
-  double *Bcolj = new double[A.cols];
-  for (int j = 0; j < B.cols; j++) {
-    for (int k = 0; k < A.cols; k++) {
-      Bcolj[k] = B.data[_matrix_index_for(B.cols, k, j)];
-    }
-    for (int i = 0; i < A.rows; i++) {
-      double s = 0;
-      for (int k = 0; k < A.cols; k++) {
-        s += A.data[_matrix_index_for(A.cols, i, k)] * Bcolj[k];
-      }
-      X->data[_matrix_index_for(X->cols, i, j)] = s;
-    }
-  }
-  delete[] Bcolj;
-  return X;
+  auto C = std::make_shared<Matrix>(A.rows, B.cols, false);
+  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.rows, B.cols, A.cols,
+              1.0, A.data, A.cols, B.data, B.cols, 0.0, C->data, C->cols);
+  return C;
 }
 
 SMatrix operator*(const SMatrix &m1, const SMatrix &m2) {
