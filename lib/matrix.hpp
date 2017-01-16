@@ -441,44 +441,46 @@ public:
     Cholesky ch;
     ch.matrix = std::make_shared<Matrix>(rows, cols);
 
-    // TODO: check symmetric
-
-    for (int r = 0; r < rows; r++) {
-      for (int c = 0; c <= r; c++) {
-        if (c == r) {
-          double sum = 0;
-          for (int j = 0; j < c; j++) {
-            sum += pow(ch.matrix->data[_matrix_index_for(cols, c, j)], 2);
-          }
-          ch.matrix->data[_matrix_index_for(cols, c, c)] =
-              sqrt(data[_matrix_index_for(cols, c, c)] - sum);
-        } else {
-          double sum = 0;
-          for (int j = 0; j < c; j++)
-            sum += ch.matrix->data[_matrix_index_for(cols, r, j)] *
-                   ch.matrix->data[_matrix_index_for(cols, c, j)];
-          ch.matrix->data[_matrix_index_for(cols, r, c)] =
-              1.0 / ch.matrix->data[_matrix_index_for(cols, c, c)] *
-              (data[_matrix_index_for(cols, r, c)] - sum);
+    bool isspd = true;
+    auto n = rows;
+    for (int j = 0; j < n; j++) {
+      double d = 0.0;
+      for (int k = 0; k < j; k++) {
+        double s = 0.0;
+        for (int i = 0; i < k; i++) {
+          s += ch.matrix->data[_matrix_index_for(cols, k, i)] *
+               ch.matrix->data[_matrix_index_for(cols, j, i)];
         }
+        ch.matrix->data[_matrix_index_for(cols, j, k)] = s =
+            (data[_matrix_index_for(cols, j, k)] - s) /
+            ch.matrix->data[_matrix_index_for(cols, k, k)];
+        d = d + s * s;
+        isspd = isspd & (data[_matrix_index_for(cols, k, j)] ==
+                         data[_matrix_index_for(cols, j, k)]);
+      }
+      d = data[_matrix_index_for(cols, j, j)] - d;
+      isspd = isspd & (d > 0.0);
+      ch.matrix->data[_matrix_index_for(cols, j, j)] =
+          std::sqrt(std::max(d, 0.0));
+      for (int k = j + 1; k < n; k++) {
+        ch.matrix->data[_matrix_index_for(cols, j, k)] = 0.0;
       }
     }
-    for (int i = 0; i < rows * cols; ++i) {
-      if (std::isnan(ch.matrix->data[i])) {
-        ch.error = true;
-        break;
-      }
-    }
-    // TODO: more efficient
+    ch.error = !isspd;
     ch.matrix = ch.matrix->transpose();
     return ch;
   }
 
-  SMatrix multiply(const SMatrix B) const {
-    assert(cols == B->rows);
-    auto C = std::make_shared<Matrix>(rows, B->cols, false);
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, rows, B->cols, cols,
-                1.0, data, cols, B->data, B->cols, 0.0, C->data, C->cols);
+  SMatrix multiply(const SMatrix B) const { return multiply(B, false, false); }
+
+  SMatrix multiply(const SMatrix B, const bool tranA, const bool tranB) const {
+    auto M = tranA ? cols : rows, N = tranA ? rows : cols;
+    auto J = tranB ? B->cols : B->rows, K = tranB ? B->rows : B->cols;
+    assert(N == J);
+    auto C = std::make_shared<Matrix>(M, K, false);
+    cblas_dgemm(CblasRowMajor, tranA ? CblasTrans : CblasNoTrans,
+                tranB ? CblasTrans : CblasNoTrans, M, K, N, 1.0, data, cols,
+                B->data, B->cols, 0.0, C->data, C->cols);
     return C;
   }
 

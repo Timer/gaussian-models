@@ -19,9 +19,8 @@ scggm_sparse_obj scggm_sparse_step(double lambda1, double lambda2, SMatrix cx,
                                    bool verbose, double eta,
                                    scggm_theta theta0) {
   scggm_sparse_obj ret;
-  auto transposedCx = cx->transpose();
-  auto Sx = transposedCx * cx, Sy = cy->transpose() * cy,
-       Sxy = transposedCx * cy;
+  auto Sx = cx->multiply(cx, true, false), Sy = cy->multiply(cy, true, false),
+       Sxy = cx->multiply(cy, true, false);
   auto N = cx->rows;
   int nobj = 10;
   int bconv = 0;
@@ -74,11 +73,11 @@ scggm_sparse_obj scggm_sparse_step(double lambda1, double lambda2, SMatrix cx,
         xk1_y.yy = xk1.yy - y.yy;
 
         double lfxk1_y = fyk +
-                         (grady.xy->list_elems_by_position()->transpose() *
-                          xk1_y.xy->list_elems_by_position())
+                         (grady.xy->list_elems_by_position()->multiply(
+                              xk1_y.xy->list_elems_by_position(), true, false))
                              ->value() +
-                         (grady.yy->list_elems_by_position()->transpose() *
-                          xk1_y.yy->list_elems_by_position())
+                         (grady.yy->list_elems_by_position()->multiply(
+                              xk1_y.yy->list_elems_by_position(), true, false))
                              ->value();
         scggm_theta diffxk1y;
         diffxk1y.xy = xk1.xy - y.xy;

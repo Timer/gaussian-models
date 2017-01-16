@@ -17,9 +17,9 @@ scggm_refit_obj scggm_refit_step(SMatrix cx, SMatrix cy, scggm_theta &z_theta,
                                  bool verbose, double eta,
                                  scggm_theta &Theta0) {
   scggm_refit_obj ret;
-  auto Sx = cx->transpose() * cx;
-  auto Sy = cy->transpose() * cy;
-  auto Sxy = cx->transpose() * cy;
+  auto Sx = cx->multiply(cx, true, false);
+  auto Sy = cy->multiply(cy, true, false);
+  auto Sxy = cx->multiply(cy, true, false);
   auto N = cx->rows;
 
   auto theta = Theta0;
@@ -87,11 +87,11 @@ scggm_refit_obj scggm_refit_step(SMatrix cx, SMatrix cy, scggm_theta &z_theta,
         xk1_y.xy = xk1.xy - y.xy;
         xk1_y.yy = xk1.yy - y.yy;
         auto lfxk1_y = fyk +
-                       (grady.xy->list_elems_by_position()->transpose() *
-                        (xk1_y.xy->list_elems_by_position()))
+                       (grady.xy->list_elems_by_position()->multiply(
+                            xk1_y.xy->list_elems_by_position(), true, false))
                            ->value() +
-                       (grady.yy->list_elems_by_position()->transpose() *
-                        (xk1_y.yy->list_elems_by_position()))
+                       (grady.yy->list_elems_by_position()->multiply(
+                            xk1_y.yy->list_elems_by_position(), true, false))
                            ->value();
         scggm_theta diffxk1;
         diffxk1.xy = xk1.xy - y.xy;

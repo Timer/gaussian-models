@@ -41,13 +41,13 @@ scggm_evaluate_obj scggm_evaluate(scggm_theta theta, SMatrix Sx, SMatrix Sxy,
 
   // icyy	 = cyy \ eye(size(cyy,2));
   auto icyy = cyy->inverse();
-  auto ithetayy = icyy * icyy->transpose();
+  auto ithetayy = icyy->multiply(icyy, false, true);
   auto txyityy = theta.xy * ithetayy;
   auto XtXth = Sx * txyityy;
-  auto txyXtXth = theta.xy->transpose() * Sx * txyityy;
+  auto txyXtXth = theta.xy->multiply(Sx, true, false) * txyityy;
 
   auto l1 = (theta.yy * Sy)->trace();
-  auto l2 = (Sxy * theta.xy->transpose())->trace();
+  auto l2 = (Sxy->multiply(theta.xy, false, true))->trace();
   auto l3 = txyXtXth->trace();
   ret.value = 0.5 * l1 + l2 + 0.5 * l3 - 0.5 * N * logdetyy;
   ret.value /= (double)N;
