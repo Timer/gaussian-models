@@ -32,8 +32,6 @@ struct Cholesky {
   bool error = false;
 };
 
-bool operator==(const SMatrix &m1, const Matrix &m2);
-
 class Matrix {
 public:
   int rows, cols;
@@ -443,12 +441,7 @@ public:
     Cholesky ch;
     ch.matrix = std::make_shared<Matrix>(rows, cols);
 
-    if (transpose() == *this) {
-      ch.error = false;
-    } else {
-      ch.error = true;
-      return ch;
-    }
+    // TODO: check symmetric
 
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c <= r; c++) {
@@ -481,6 +474,14 @@ public:
     return ch;
   }
 
+  SMatrix multiply(const SMatrix B) const {
+    assert(cols == B->rows);
+    auto C = std::make_shared<Matrix>(rows, B->cols, false);
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, rows, B->cols, cols,
+                1.0, data, cols, B->data, B->cols, 0.0, C->data, C->cols);
+    return C;
+  }
+
   void print() const {
     for (int r = 0; r < rows; ++r) {
       for (int c = 0; c < cols; ++c) {
@@ -499,65 +500,39 @@ SMatrix eye(int rows, int cols) {
   return M;
 }
 
-SMatrix operator-(const Matrix &m1, const Matrix &m2) {
-  assert(m1.rows == m2.rows && m1.cols == m2.cols);
-  auto rm = std::make_shared<Matrix>(m1.rows, m1.cols, false);
-  for (auto i = 0; i < m1.rows * m2.cols; ++i) {
-    rm->data[i] = m1.data[i] - m2.data[i];
+SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
+  assert(m1->rows == m2->rows && m1->cols == m2->cols);
+  auto rm = std::make_shared<Matrix>(m1->rows, m1->cols, false);
+  for (auto i = 0; i < m1->rows * m2->cols; ++i) {
+    rm->data[i] = m1->data[i] - m2->data[i];
   }
   return rm;
 }
 
-SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
-  return *m1.get() - *m2.get();
-}
-
-SMatrix operator*(const Matrix &A, const Matrix &B) {
-  assert(A.cols == B.rows);
-  auto C = std::make_shared<Matrix>(A.rows, B.cols, false);
-  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.rows, B.cols, A.cols,
-              1.0, A.data, A.cols, B.data, B.cols, 0.0, C->data, C->cols);
-  return C;
-}
-
 SMatrix operator*(const SMatrix &m1, const SMatrix &m2) {
-  return *m1.get() * *m2.get();
+  return m1->multiply(m2);
 }
 
-SMatrix operator*(const SMatrix &m1, const Matrix &m2) {
-  return *m1.get() * m2;
-}
-
-SMatrix operator+(const Matrix &A, const Matrix &B) {
-  assert(A.rows == B.rows && A.cols == B.cols);
-  auto C = std::make_shared<Matrix>(A.rows, A.cols, false);
-  for (auto i = 0; i < A.rows * A.cols; ++i) {
-    C->data[i] = A.data[i] + B.data[i];
+SMatrix operator+(const SMatrix &A, const SMatrix &B) {
+  assert(A->rows == B->rows && A->cols == B->cols);
+  auto C = std::make_shared<Matrix>(A->rows, A->cols, false);
+  for (auto i = 0; i < A->rows * A->cols; ++i) {
+    C->data[i] = A->data[i] + B->data[i];
   }
   return C;
 }
 
-SMatrix operator+(const SMatrix &m1, const SMatrix &m2) {
-  return *m1.get() + *m2.get();
-}
-
-SMatrix operator+(const SMatrix &m1, const Matrix &m2) {
-  return *m1.get() + m2;
-}
-
-bool operator==(const Matrix &m1, const Matrix &m2) {
-  if (m1.rows != m2.rows || m1.cols != m2.cols) {
+bool operator==(const SMatrix m1, const SMatrix m2) {
+  if (m1->rows != m2->rows || m1->cols != m2->cols) {
     return false;
   }
-  for (auto i = 0; i < m1.rows * m1.cols; ++i) {
-    if (m1.data[i] != m2.data[i]) {
+  for (auto i = 0; i < m1->rows * m1->cols; ++i) {
+    if (m1->data[i] != m2->data[i]) {
       return false;
     }
   }
   return true;
 }
-
-bool operator==(const SMatrix &m1, const Matrix &m2) { return *m1.get() == m2; }
 
 std::vector<std::string> split(const std::string &s, const std::string &delim,
                                const bool keep_empty = false) {
