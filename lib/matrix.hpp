@@ -443,11 +443,11 @@ public:
 
     bool isspd = true;
     auto n = rows;
-    for (int j = 0; j < n; j++) {
+    for (int j = 0; j < n && isspd; j++) {
       double d = 0.0;
-      for (int k = 0; k < j; k++) {
+      for (int k = 0; k < j && isspd; k++) {
         double s = 0.0;
-        for (int i = 0; i < k; i++) {
+        for (int i = 0; i < k && isspd; i++) {
           s += ch.matrix->data[_matrix_index_for(cols, i, k)] *
                ch.matrix->data[_matrix_index_for(cols, i, j)];
         }
