@@ -33,6 +33,8 @@ struct Cholesky {
 };
 
 class Matrix {
+private:
+  bool accelerated = false;
 public:
   int rows, cols;
   double *data;
@@ -72,7 +74,19 @@ public:
 
   ~Matrix() { delete[] data; }
 
-  SMatrix copy(std::vector<int> r, int j0, int j1) const {
+  void accelerate() {
+    if (accelerated) return;
+
+  }
+
+  void decelerate() {
+    if (!accelerated) return;
+
+  }
+
+  SMatrix copy(std::vector<int> r, int j0, int j1) {
+    decelerate();
+
     SMatrix X = std::make_shared<Matrix>(r.size(), j1 - j0 + 1, false);
     for (int i = 0; i < r.size(); i++) {
       for (int j = j0; j <= j1; j++) {
@@ -83,7 +97,9 @@ public:
     return X;
   }
 
-  SMatrix transpose() const {
+  SMatrix transpose() {
+    decelerate();
+
     auto m = std::make_shared<Matrix>(cols, rows, false);
     for (auto n = 0; n < rows * cols; ++n) {
       int i = n / rows;
@@ -93,10 +109,12 @@ public:
     return m;
   }
 
-  SMatrix mean() const {
+  SMatrix mean()  {
     if (rows == 1) {
       return transpose()->mean();
     }
+
+    decelerate();
     auto m = std::make_shared<Matrix>(1, cols);
     for (auto r = 0; r < rows; ++r) {
       for (auto c = 0; c < cols; ++c) {
@@ -109,8 +127,10 @@ public:
     return m;
   }
 
-  SMatrix repeat(int makeRows, int copies) const {
+  SMatrix repeat(int makeRows, int copies)  {
     assert(rows == 1);
+
+    decelerate();
     auto rm = std::make_shared<Matrix>(makeRows, cols * copies);
     for (auto r = 0; r < makeRows; ++r) {
       for (auto o = 0; o < copies; ++o) {
@@ -123,7 +143,9 @@ public:
     return rm;
   }
 
-  SMatrix diag() const {
+  SMatrix diag()  {
+    decelerate();
+
     if (cols == 1) {
       SMatrix m = std::make_shared<Matrix>(rows, rows);
       for (int i = 0; i < rows; ++i) {
@@ -140,7 +162,9 @@ public:
     }
   }
 
-  SMatrix scalar(const double &s) const {
+  SMatrix scalar(const double &s)  {
+    decelerate();
+
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = data[i] * s;
@@ -148,7 +172,9 @@ public:
     return m;
   }
 
-  SMatrix power(const double &s) const {
+  SMatrix power(const double &s)  {
+    decelerate();
+
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = std::pow(data[i], s);
@@ -156,7 +182,9 @@ public:
     return m;
   }
 
-  SMatrix add(const double &s) const {
+  SMatrix add(const double &s)  {
+    decelerate();
+
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = data[i] + s;
@@ -164,7 +192,9 @@ public:
     return m;
   }
 
-  SMatrix subtract(const double &s) const {
+  SMatrix subtract(const double &s)  {
+    decelerate();
+
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = data[i] - s;
@@ -172,7 +202,9 @@ public:
     return m;
   }
 
-  SMatrix abs() const {
+  SMatrix abs()  {
+    decelerate();
+
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = std::abs(data[i]);
@@ -180,7 +212,9 @@ public:
     return m;
   }
 
-  SMatrix log() const {
+  SMatrix log()  {
+    decelerate();
+
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = std::log(data[i]);
@@ -188,7 +222,9 @@ public:
     return m;
   }
 
-  SMatrix floor() const {
+  SMatrix floor()  {
+    decelerate();
+
     SMatrix m = std::make_shared<Matrix>(rows, cols, false);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i] = std::floor(data[i]);
@@ -196,8 +232,10 @@ public:
     return m;
   }
 
-  double sumValue() const {
+  double sumValue()  {
     assert(cols == 1);
+    decelerate();
+
     double d = 0;
     for (int i = 0; i < rows; ++i) {
       d += data[i];
@@ -205,19 +243,21 @@ public:
     return d;
   }
 
-  double trace() const {
+  double trace()  {
     assert(rows == cols);
     return diag()->sumValue();
   }
 
-  double value() const {
+  double value()  {
     assert(rows == 1 && cols == 1);
+    decelerate();
     return data[0];
   }
 
 private:
-  bool isLUNonsingular() const {
+  bool isLUNonsingular()  {
     assert(rows == cols);
+    decelerate();
     for (int j = 0; j < cols; j++) {
       if (data[_matrix_index_for(cols, j, j)] == 0) {
         return false;
@@ -227,8 +267,9 @@ private:
   }
 
 public:
-  SMatrix inverse() const {
+  SMatrix inverse()  {
     assert(rows == cols);
+    decelerate();
     auto LU = std::make_shared<Matrix>(*this);
     int m = rows, n = cols;
     std::vector<int> piv;
@@ -319,8 +360,9 @@ public:
     return X;
   }
 
-  bool identity() const {
+  bool identity()  {
     assert(rows == cols);
+    decelerate();
     for (int i = 0; i < rows; ++i) {
       double v = data[_matrix_index_for(cols, i, i)];
       if (std::abs(1 - v) >= std::numeric_limits<double>::epsilon())
@@ -330,7 +372,8 @@ public:
   }
 
   // TODO: returned matrix changes need to propogate
-  SMatrix list_elems_by_position() const { //(:)
+  SMatrix list_elems_by_position()  { //(:)
+    decelerate();
     SMatrix M = std::make_shared<Matrix>(rows * cols, 1);
     for (int p = 1; p <= rows * cols; ++p) {
       M->data[p - 1] = data[_matrix_index_for_position(rows, cols, p)];
@@ -339,8 +382,9 @@ public:
   }
 
   // TODO: returned matrix changes need to propogate
-  SMatrix list_elems_by_column_position(int col) const { //(:, col)
+  SMatrix list_elems_by_column_position(int col)  { //(:, col)
     assert(col > 0 && col <= cols);
+    decelerate();
     col -= 1;
     SMatrix M = std::make_shared<Matrix>(rows, 1);
     for (int r = 0; r < rows; ++r) {
@@ -350,7 +394,8 @@ public:
   }
 
   // TODO: returned matrix changes need to propogate
-  SMatrix row_elems_by_position(int start, int end) const { //(start:end)
+  SMatrix row_elems_by_position(int start, int end)  { //(start:end)
+    decelerate();
     SMatrix M = std::make_shared<Matrix>(1, end - start + 1);
     int index = 0;
     for (int p = start; p <= end; ++p) {
@@ -361,6 +406,7 @@ public:
 
   SMatrix find_positions(const double &alpha, const bool greater,
                          const bool equal) {
+                           decelerate();
     std::vector<int> positions;
     for (int p = 1; p <= rows * cols; ++p) {
       auto value = data[_matrix_index_for_position(rows, cols, p)];
@@ -388,16 +434,18 @@ public:
     return M;
   }
 
-  void set_positions(SMatrix list, const double &value) const { //(list) = value
+  void set_positions(SMatrix list, const double &value)  { //(list) = value
     assert(list->cols == 1);
+    decelerate();
     for (int index = 0; index < list->rows; ++index) {
       data[_matrix_index_for_position(rows, cols, list->data[index])] = value;
     }
   }
 
-  void set_positions(SMatrix list, SMatrix source) const { // A(list) = B(list)
+  void set_positions(SMatrix list, SMatrix source)  { // A(list) = B(list)
     assert(list->cols == 1);
     assert(rows == source->rows && cols == source->cols);
+    decelerate();
     for (int index = 0; index < list->rows; ++index) {
       int p = list->data[index];
       data[_matrix_index_for_position(rows, cols, p)] =
@@ -406,9 +454,10 @@ public:
   }
 
   void set_positions(SMatrix list, SMatrix source,
-                     double delta) const { // A(list) = B(list) + delta
+                     double delta)  { // A(list) = B(list) + delta
     assert(list->cols == 1);
     assert(rows == source->rows && cols == source->cols);
+    decelerate();
     for (int index = 0; index < list->rows; ++index) {
       int p = list->data[index];
       data[_matrix_index_for_position(rows, cols, p)] =
@@ -417,14 +466,18 @@ public:
   }
 
   void set_position(const int &position, const double &value) { //(1) =>
+    decelerate();
     data[_matrix_index_for_position(rows, cols, position)] = value;
   }
 
-  double get_position(const int &position) const { //(1)
+  double get_position(const int &position)  { //(1)
+    decelerate();
     return data[_matrix_index_for_position(rows, cols, position)];
   }
 
   SMatrix triu(int kdiag) {
+    decelerate();
+
     auto M = std::make_shared<Matrix>(rows, cols, true);
     for (int r = 0; r < rows; ++r) {
       for (int c = kdiag + r; c < cols; ++c) {
@@ -435,8 +488,9 @@ public:
     return M;
   }
 
-  Cholesky cholesky() const {
+  Cholesky cholesky()  {
     assert(rows == cols);
+    decelerate();
 
     Cholesky ch;
     ch.matrix = std::make_shared<Matrix>(rows, cols);
@@ -470,12 +524,15 @@ public:
     return ch;
   }
 
-  SMatrix multiply(const SMatrix B) const { return multiply(B, false, false); }
+  SMatrix multiply(const SMatrix B) { return multiply(B, false, false); }
 
-  SMatrix multiply(const SMatrix B, const bool tranA, const bool tranB) const {
+  SMatrix multiply(const SMatrix B, const bool tranA, const bool tranB) {
     auto M = tranA ? cols : rows, N = tranA ? rows : cols;
     auto J = tranB ? B->cols : B->rows, K = tranB ? B->rows : B->cols;
     assert(N == J);
+    decelerate();
+    B->decelerate();
+
     auto C = std::make_shared<Matrix>(M, K, false);
     cblas_dgemm(CblasRowMajor, tranA ? CblasTrans : CblasNoTrans,
                 tranB ? CblasTrans : CblasNoTrans, M, K, N, 1.0, data, cols,
@@ -483,7 +540,9 @@ public:
     return C;
   }
 
-  void print() const {
+  void print()  {
+    decelerate();
+
     for (int r = 0; r < rows; ++r) {
       for (int c = 0; c < cols; ++c) {
         std::cout << data[_matrix_index_for(cols, r, c)] << " ";
@@ -503,6 +562,9 @@ SMatrix eye(int rows, int cols) {
 
 SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
   assert(m1->rows == m2->rows && m1->cols == m2->cols);
+  m1->decelerate();
+  m2->decelerate();
+
   auto rm = std::make_shared<Matrix>(m1->rows, m1->cols, false);
   for (auto i = 0; i < m1->rows * m2->cols; ++i) {
     rm->data[i] = m1->data[i] - m2->data[i];
@@ -516,6 +578,8 @@ SMatrix operator*(const SMatrix &m1, const SMatrix &m2) {
 
 SMatrix operator+(const SMatrix &A, const SMatrix &B) {
   assert(A->rows == B->rows && A->cols == B->cols);
+  A->decelerate();
+  B->decelerate();
   auto C = std::make_shared<Matrix>(A->rows, A->cols, false);
   for (auto i = 0; i < A->rows * A->cols; ++i) {
     C->data[i] = A->data[i] + B->data[i];
@@ -527,6 +591,8 @@ bool operator==(const SMatrix m1, const SMatrix m2) {
   if (m1->rows != m2->rows || m1->cols != m2->cols) {
     return false;
   }
+  m1->decelerate();
+  m2->decelerate();
   for (auto i = 0; i < m1->rows * m1->cols; ++i) {
     if (m1->data[i] != m2->data[i]) {
       return false;
@@ -556,6 +622,7 @@ std::vector<std::string> split(const std::string &s, const std::string &delim,
   }
   return result;
 }
+
 SMatrix load(std::string path) {
   std::ifstream t(path);
   std::string str((std::istreambuf_iterator<char>(t)),
