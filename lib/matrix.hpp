@@ -14,6 +14,16 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
+#define ACCELERATE_MODE_NONE 0
+#define ACCELERATE_MODE_CUDA 1
+#define ACCELERATE_MODE_OPENCL 2
+
+#define ACCELERATE_MODE ACCELERATE_MODE_NONE
+
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+#include <cublas_v2.h>
+#endif
+
 class Matrix;
 typedef std::shared_ptr<Matrix> SMatrix;
 
@@ -35,6 +45,7 @@ struct Cholesky {
 class Matrix {
 private:
   bool accelerated = false;
+  double *accelerate_data = nullptr;
 
 public:
   int rows, cols;
@@ -75,14 +86,30 @@ public:
 
   ~Matrix() { delete[] data; }
 
+  bool shouldAccelerate() {
+    if (accelerated)
+      return true;
+
+#if ACCELERATE_MODE == ACCELERATE_MODE_NONE
+    return false;
+#else
+    return false;
+#endif
+  }
+
   void accelerate() {
     if (accelerated)
       return;
+
+    assert(false);
+    accelerated = true;
   }
 
   void decelerate() {
     if (!accelerated)
       return;
+
+    accelerated = false;
   }
 
   SMatrix copy(std::vector<int> r, int j0, int j1) {
@@ -99,6 +126,7 @@ public:
   }
 
   SMatrix transpose() {
+    // TODO have an accelerated option
     decelerate();
 
     auto m = std::make_shared<Matrix>(cols, rows, false);
@@ -528,16 +556,39 @@ public:
   SMatrix multiply(const SMatrix B) { return multiply(B, false, false); }
 
   SMatrix multiply(const SMatrix B, const bool tranA, const bool tranB) {
-    auto M = tranA ? cols : rows, N = tranA ? rows : cols;
-    auto J = tranB ? B->cols : B->rows, K = tranB ? B->rows : B->cols;
-    assert(N == J);
-    decelerate();
-    B->decelerate();
+    auto M = tranA ? cols : rows, N = tranA ? B->rows : B->cols;
+    auto J = tranB ? B->cols : B->rows, K = tranB ? rows : cols;
+    assert(J == K);
 
-    auto C = std::make_shared<Matrix>(M, K, false);
-    cblas_dgemm(CblasRowMajor, tranA ? CblasTrans : CblasNoTrans,
-                tranB ? CblasTrans : CblasNoTrans, M, K, N, 1.0, data, cols,
-                B->data, B->cols, 0.0, C->data, C->cols);
+    auto C = std::make_shared<Matrix>(M, N, false);
+    if (shouldAccelerate()) {
+      accelerate();
+      B->accelerate();
+
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+      cublasHandle_t handle;
+      cublasCreate(&handle); // TODO: store and reuse these handle[s]
+      double *C_accelerate_data = nullptr;
+      cudaMalloc(&C_accelerate_data, M * N * sizeof(double));
+      // We transpose when we don't need to transpose because cublas expecfts
+      // col major but we store in row major.
+      cublasDgemm(handle, tranA ? CUBLAS_OP_N : CUBLAS_OP_T,
+                  tranB ? CUBLAS_OP_N : CUBLAS_OP_T, M, N, K, 1.0,
+                  accelerate_data, cols, B->accelerate_data, B->cols, 0.0,
+                  C_accelerate_data, C->cols);
+      // TODO: force accelerate C (provide memory): C_accelerate_data
+      cublasDestroy(handle);
+#else
+      assert(false);
+#endif
+    } else {
+      decelerate();
+      B->decelerate();
+
+      cblas_dgemm(CblasRowMajor, tranA ? CblasTrans : CblasNoTrans,
+                  tranB ? CblasTrans : CblasNoTrans, M, N, K, 1.0, data, cols,
+                  B->data, B->cols, 0.0, C->data, C->cols);
+    }
     return C;
   }
 
