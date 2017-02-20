@@ -45,7 +45,9 @@ struct Cholesky {
 class Matrix {
 private:
   bool accelerated = false;
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
   double *accelerate_data = nullptr;
+#endif
 
 public:
   int rows, cols;
@@ -84,30 +86,65 @@ public:
     }
   }
 
-  ~Matrix() { delete[] data; }
+  ~Matrix() {
+    delete[] data;
+    if (accelerate_data == nullptr) {
+      return;
+    }
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    cudaFree(accelerate_data);
+#else
+    assert(false);
+#endif
+  }
 
   bool shouldAccelerate() {
-    if (accelerated)
+    if (accelerated) {
       return true;
+    }
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     return false;
+#elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    return true; // TODO: measure
 #else
     return false;
 #endif
   }
 
   void accelerate() {
-    if (accelerated)
+    if (accelerated) {
       return;
+    }
 
+    auto size = rows * cols * sizeof(data);
+#if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     assert(false);
+#elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    if (accelerate_data == nullptr) {
+      cudaMalloc(&accelerate_data, size);
+    }
+    cudaMemcpy(accelerate_data, data, size, cudaMemcpyHostToDevice);
+#else
+    assert(false);
+#endif
+
     accelerated = true;
   }
 
   void decelerate() {
-    if (!accelerated)
+    if (!accelerated) {
       return;
+    }
+
+#if ACCELERATE_MODE == ACCELERATE_MODE_NONE
+    assert(false);
+#elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    auto size = rows * cols * sizeof(data);
+    cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost);
+#else
+    assert(false);
+#endif
 
     accelerated = false;
   }
