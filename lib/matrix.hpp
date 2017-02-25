@@ -1,4 +1,6 @@
-#include <Accelerate/Accelerate.h>
+#ifndef MATRIX_HPP
+#define MATRIX_HPP
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -11,8 +13,9 @@
 #include <string>
 #include <vector>
 
-#ifndef MATRIX_HPP
-#define MATRIX_HPP
+#ifdef __APPLE__
+#include <Accelerate/Accelerate.h>
+#endif
 
 #define ACCELERATE_MODE_NONE 0
 #define ACCELERATE_MODE_CUDA 1
@@ -21,7 +24,7 @@
 #define ACCELERATE_MODE ACCELERATE_MODE_OPENCL
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-#include <cublas_v2.h>
+#include "cublas_v2.h"
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
 #include <clBLAS.h>
 #define MAX_NUM_DEVICES 16
