@@ -100,9 +100,13 @@ public:
 
   ~Matrix() {
     delete[] data;
+#if ACCELERATE_MODE == ACCELERATE_MODE_NONE
+    return;
+#else
     if (accelerate_data == nullptr) {
       return;
     }
+#endif
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     cudaFree(accelerate_data);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
