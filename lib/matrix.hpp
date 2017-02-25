@@ -634,8 +634,8 @@ public:
   SMatrix multiply(const SMatrix B) { return multiply(B, false, false); }
 
   SMatrix multiply(const SMatrix B, const bool tranA, const bool tranB) {
-    auto M = tranA ? cols : rows, N = tranA ? B->rows : B->cols;
-    auto J = tranB ? B->cols : B->rows, K = tranB ? rows : cols;
+    auto M = tranA ? cols : rows, N = tranB ? B->rows : B->cols;
+    auto J = tranB ? B->cols : B->rows, K = tranA ? rows : cols;
     assert(J == K);
 
     auto C = std::make_shared<Matrix>(M, N, false);
