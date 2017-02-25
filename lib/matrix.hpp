@@ -18,10 +18,15 @@
 #define ACCELERATE_MODE_CUDA 1
 #define ACCELERATE_MODE_OPENCL 2
 
-#define ACCELERATE_MODE ACCELERATE_MODE_NONE
+#define ACCELERATE_MODE ACCELERATE_MODE_OPENCL
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
 #include <cublas_v2.h>
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+#include <clBLAS.h>
+#define MAX_NUM_DEVICES 16
+#define MAX_DEVICE_NAME 1024
+#define CURRENT_DEVICE 0
 #endif
 
 class Matrix;
@@ -47,6 +52,10 @@ private:
   bool accelerated = false;
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
   double *accelerate_data = nullptr;
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+  cl_mem accelerate_data = nullptr;
+  cl_context ctx = 0;
+  cl_command_queue queue = 0;
 #endif
 
 public:
@@ -93,6 +102,8 @@ public:
     }
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     cudaFree(accelerate_data);
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+    clReleaseMemObject(accelerate_data);
 #else
     assert(false);
 #endif
@@ -106,6 +117,8 @@ public:
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     return false;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    return true; // TODO: measure
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     return true; // TODO: measure
 #else
     return false;
@@ -125,6 +138,28 @@ public:
       cudaMalloc(&accelerate_data, size);
     }
     cudaMemcpy(accelerate_data, data, size, cudaMemcpyHostToDevice);
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+    if (accelerate_data == nullptr) {
+      cl_int err;
+      cl_platform_id platform = 0;
+      cl_device_id device = 0;
+      cl_device_id devices[MAX_NUM_DEVICES];
+      cl_uint numDevices = 0;
+      cl_context_properties props[3] = {CL_CONTEXT_PLATFORM, 0, 0};
+
+      err = clGetPlatformIDs(1, &platform, NULL);
+      err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
+      err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, numDevices, devices,
+                           NULL);
+      device = devices[CURRENT_DEVICE];
+      props[1] = (cl_context_properties)platform;
+      ctx = clCreateContext(props, 1, &device, NULL, NULL, &err);
+      queue = clCreateCommandQueue(ctx, device, 0, &err);
+
+      accelerate_data = clCreateBuffer(ctx, CL_MEM_READ_ONLY, size, NULL, &err);
+      err = clEnqueueWriteBuffer(queue, accelerate_data, CL_TRUE, 0, size, data,
+                                 0, NULL, NULL);
+    }
 #else
     assert(false);
 #endif
@@ -137,11 +172,14 @@ public:
       return;
     }
 
+    auto size = rows * cols * sizeof(data);
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     assert(false);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-    auto size = rows * cols * sizeof(data);
     cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost);
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+    clEnqueueReadBuffer(queue, accelerate_data, CL_TRUE, 0, size, data, 0, NULL,
+                        NULL);
 #else
     assert(false);
 #endif
