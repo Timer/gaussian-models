@@ -10,7 +10,7 @@ fi
 echo "Compiling..."
 if [ $OS == "Darwin" ]; then
   CC=clang++
-  FLAGS="$FLAGS -framework Accelerate -framework OpenCL"
+  FLAGS="$FLAGS -framework Accelerate -framework OpenCL -lclBLAS"
 fi
 echo "... using $CC."
 rm *.out

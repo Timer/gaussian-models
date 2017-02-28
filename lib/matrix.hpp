@@ -13,23 +13,14 @@
 #include <string>
 #include <vector>
 
+#include "shared.hpp"
+
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
 #endif
 
-#define ACCELERATE_MODE_NONE 0
-#define ACCELERATE_MODE_CUDA 1
-#define ACCELERATE_MODE_OPENCL 2
-
-#define ACCELERATE_MODE ACCELERATE_MODE_OPENCL
-
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
 #include "cublas_v2.h"
-#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
-#include <clBLAS.h>
-#define MAX_NUM_DEVICES 16
-#define MAX_DEVICE_NAME 1024
-#define CURRENT_DEVICE 0
 #endif
 
 class Matrix;
@@ -57,8 +48,15 @@ private:
   double *accelerate_data = nullptr;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
   cl_mem accelerate_data = nullptr;
-  cl_context ctx = 0;
-  cl_command_queue queue = 0;
+  void inherit(cl_mem accelerate_data) {
+    if (this->accelerate_data != nullptr) {
+
+      std::cout << "You cannot inherit twice." << std::endl;
+      throw "You cannot inherit twice.";
+    }
+    this->accelerated = true;
+    this->accelerate_data = accelerate_data;
+  }
 #endif
 
 public:
@@ -148,24 +146,10 @@ public:
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     if (accelerate_data == nullptr) {
       cl_int err;
-      cl_platform_id platform = 0;
-      cl_device_id device = 0;
-      cl_device_id devices[MAX_NUM_DEVICES];
-      cl_uint numDevices = 0;
-      cl_context_properties props[3] = {CL_CONTEXT_PLATFORM, 0, 0};
-
-      err = clGetPlatformIDs(1, &platform, NULL);
-      err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
-      err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, numDevices, devices,
-                           NULL);
-      device = devices[CURRENT_DEVICE];
-      props[1] = (cl_context_properties)platform;
-      ctx = clCreateContext(props, 1, &device, NULL, NULL, &err);
-      queue = clCreateCommandQueue(ctx, device, 0, &err);
-
-      accelerate_data = clCreateBuffer(ctx, CL_MEM_READ_ONLY, size, NULL, &err);
-      err = clEnqueueWriteBuffer(queue, accelerate_data, CL_TRUE, 0, size, data,
-                                 0, NULL, NULL);
+      accelerate_data =
+          clCreateBuffer(cl_ctx, CL_MEM_READ_ONLY, size, NULL, &err);
+      err = clEnqueueWriteBuffer(cl_queue, accelerate_data, CL_TRUE, 0, size,
+                                 data, 0, NULL, NULL);
     }
 #else
     assert(false);
@@ -185,8 +169,8 @@ public:
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
-    clEnqueueReadBuffer(queue, accelerate_data, CL_TRUE, 0, size, data, 0, NULL,
-                        NULL);
+    clEnqueueReadBuffer(cl_queue, accelerate_data, CL_TRUE, 0, size, data, 0,
+                        NULL, NULL);
 #else
     assert(false);
 #endif
@@ -652,7 +636,7 @@ public:
       cublasCreate(&handle); // TODO: store and reuse these handle[s]
       double *C_accelerate_data = nullptr;
       cudaMalloc(&C_accelerate_data, M * N * sizeof(double));
-      // We transpose when we don't need to transpose because cublas expecfts
+      // We transpose when we don't need to transpose because cublas expects
       // col major but we store in row major.
       cublasDgemm(handle, tranA ? CUBLAS_OP_N : CUBLAS_OP_T,
                   tranB ? CUBLAS_OP_N : CUBLAS_OP_T, M, N, K, 1.0,
@@ -660,6 +644,22 @@ public:
                   C_accelerate_data, C->cols);
       // TODO: force accelerate C (provide memory): C_accelerate_data
       cublasDestroy(handle);
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+      cl_int err;
+      cl_event event;
+      auto C_accelerate_data = clCreateBuffer(
+          cl_ctx, CL_MEM_READ_ONLY, M * N * sizeof(double), NULL, &err);
+      err = clblasDgemm(clblasRowMajor, tranA ? clblasTrans : clblasNoTrans,
+                        tranB ? clblasTrans : clblasNoTrans, M, N, K, 1.0,
+                        accelerate_data, 0, cols, B->accelerate_data, 0,
+                        B->cols, 0.0, C_accelerate_data, 0, C->cols, 1,
+                        &cl_queue, 0, NULL, &event);
+      if (err != clblasSuccess) {
+        std::cout << "Could not execute dgemm." << std::endl;
+        throw "Could not execute dgemm.";
+      }
+      err = clWaitForEvents(1, &event);
+      C->inherit(C_accelerate_data);
 #else
       assert(false);
 #endif

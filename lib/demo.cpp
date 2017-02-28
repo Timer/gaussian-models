@@ -1,9 +1,12 @@
 #include "scggm.hpp"
 #include "scggm_indirect_SNP_decompose.hpp"
 #include "scggm_indirect_SNP_overall.hpp"
+#include "shared.hpp"
 #include <cstdio>
 
 int main(int argc, char *argv[]) {
+  event_start();
+
   //--------------------------------------------------------------------------
   // Sample run of the sparse CGGM algorithm without cross-validation
   //--------------------------------------------------------------------------
@@ -58,5 +61,6 @@ int main(int argc, char *argv[]) {
   dlmwrite('./results/demo/Cov_Network_Induced.txt', Cov.Network_Induced, '\t');
   dlmwrite('./results/demo/Cov_SNP_Induced.txt', Cov.SNP_Induced, '\t');
   */
+  event_stop();
   return 0;
 }

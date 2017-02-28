@@ -1,9 +1,11 @@
 #include "matrix.hpp"
+#include "shared.hpp"
 #include "sparfun.hpp"
 #include <cassert>
 #include <iostream>
 
 int main(int argc, char *argv[]) {
+  event_start();
   int sampleA[2][3] = {{1, 2, 3}, {4, 5, 6}};
   double meanA[1][3] = {{2.5, 3.5, 4.5}};
   auto m1 = std::make_shared<Matrix>(sampleA),
@@ -160,5 +162,7 @@ int main(int argc, char *argv[]) {
   assert(std::make_shared<Matrix>(listColMatrix)
              ->list_elems_by_column_position(2) ==
          std::make_shared<Matrix>(listColResult));
+
+  event_stop();
   return 0;
 }
