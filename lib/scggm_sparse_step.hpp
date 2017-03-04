@@ -1,10 +1,10 @@
+#include <cstdio>
+#include <memory>
 #include "matrix.hpp"
 #include "scggm_evaluate.hpp"
 #include "scggm_penalty.hpp"
 #include "scggm_soft_threshold.hpp"
 #include "scggm_theta.hpp"
-#include <cstdio>
-#include <memory>
 
 #ifndef SCGGM_SPARSE_STEP_HPP
 #define SCGGM_SPARSE_STEP_HPP
@@ -67,7 +67,7 @@ scggm_sparse_obj scggm_sparse_step(double lambda1, double lambda2, SMatrix cx,
       auto er3 = scggm_evaluate(xk1, Sx, Sxy, Sy, N, 'n', verbose);
       fxk1 = er3.value;
       if (!zk1.yy->cholesky().error && !er2.error &&
-          !er3.error) { // xk1, zk1, y all positive definite
+          !er3.error) {  // xk1, zk1, y all positive definite
         scggm_theta xk1_y;
         xk1_y.xy = xk1.xy - y.xy;
         xk1_y.yy = xk1.yy - y.yy;
@@ -91,7 +91,7 @@ scggm_sparse_obj scggm_sparse_step(double lambda1, double lambda2, SMatrix cx,
           xk = xk1;
           zk = zk1;
           bconv = 1;
-          break; // line search converged
+          break;  // line search converged
         }
       }
       ++ik;

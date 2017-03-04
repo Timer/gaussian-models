@@ -1,6 +1,6 @@
+#include <cmath>
 #include "matrix.hpp"
 #include "scggm_theta.hpp"
-#include <cmath>
 
 #ifndef scggm_penalty_HPP
 #define scggm_penalty_HPP

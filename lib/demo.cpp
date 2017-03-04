@@ -1,8 +1,8 @@
+#include <cstdio>
 #include "scggm.hpp"
 #include "scggm_indirect_SNP_decompose.hpp"
 #include "scggm_indirect_SNP_overall.hpp"
 #include "shared.hpp"
-#include <cstdio>
 
 int main(int argc, char *argv[]) {
   event_start();
@@ -17,9 +17,10 @@ int main(int argc, char *argv[]) {
   SMatrix xtrain = load("./data/xtrain.txt"),
           ytrain = load("./data/ytrain.txt");
 
-  printf("sCGGM demo...\nJ = %d, K = %d, sample size = %d\nRegularization "
-         "parameters: lambda_1 = %g, lambda_2 = %g\n",
-         xtrain->cols, ytrain->cols, xtrain->rows, lambda_1, lambda_2);
+  printf(
+      "sCGGM demo...\nJ = %d, K = %d, sample size = %d\nRegularization "
+      "parameters: lambda_1 = %g, lambda_2 = %g\n",
+      xtrain->cols, ytrain->cols, xtrain->rows, lambda_1, lambda_2);
 
   // run SCGGM
   // auto theta0 = std::make_shared<scggm_theta>();
@@ -40,9 +41,10 @@ int main(int argc, char *argv[]) {
   // decomposition of overall indirect SNP perturbations
   // passed by the k-th gene
   int k = 2;
-  printf("Computing decomposition of overall indirect SNP perturbations on "
-         "gene %d.\n",
-         k);
+  printf(
+      "Computing decomposition of overall indirect SNP perturbations on "
+      "gene %d.\n",
+      k);
   auto Beta_k = scggm_indirect_SNP_decompose(opt.Theta, k);
 
   /*

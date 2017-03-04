@@ -1,7 +1,7 @@
-#include "matrix.hpp"
-#include "scggm_theta.hpp"
 #include <cstdio>
 #include <limits>
+#include "matrix.hpp"
+#include "scggm_theta.hpp"
 
 #ifndef scggm_evaluate_HPP
 #define scggm_evaluate_HPP
@@ -50,7 +50,7 @@ scggm_evaluate_obj scggm_evaluate(scggm_theta theta, SMatrix Sx, SMatrix Sxy,
   auto l2 = (Sxy->multiply(theta.xy, false, true))->trace();
   auto l3 = txyXtXth->trace();
   ret.value = 0.5 * l1 + l2 + 0.5 * l3 - 0.5 * N * logdetyy;
-  ret.value /= (double)N;
+  ret.value /= (double) N;
 
   if (gradient == 'y') {
     ret.grad.xy = (Sxy + XtXth)->scalar(1.0 / N);

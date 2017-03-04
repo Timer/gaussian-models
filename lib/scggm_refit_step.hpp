@@ -1,8 +1,8 @@
+#include <cstdio>
+#include <memory>
 #include "matrix.hpp"
 #include "scggm_evaluate.hpp"
 #include "scggm_theta.hpp"
-#include <cstdio>
-#include <memory>
 
 #ifndef scggm_refit_step_HPP
 #define scggm_refit_step_HPP
@@ -26,7 +26,7 @@ scggm_refit_obj scggm_refit_step(SMatrix cx, SMatrix cy, scggm_theta &z_theta,
   auto bconv = 0;
   theta.xy->set_positions(z_theta.xy, 0);
   theta.yy->set_positions(z_theta.yy,
-                          0); // constrain the sparsity pattern of the variable
+                          0);  // constrain the sparsity pattern of the variable
   ret.obj = std::make_shared<Matrix>(max_iterations, 1);
   double L = 1.0;
   auto nobj = 10;
@@ -82,7 +82,7 @@ scggm_refit_obj scggm_refit_step(SMatrix cx, SMatrix cy, scggm_theta &z_theta,
       auto flagxk1 = se1.error;
       auto flagzk1 = zk1.yy->cholesky().error;
 
-      if (!flagzk1 && !flagy && !flagxk1) { // xk1, zk1, y all positive definite
+      if (!flagzk1 && !flagy && !flagxk1) {  // xk1, zk1, y all positive definite
         scggm_theta xk1_y;
         xk1_y.xy = xk1.xy - y.xy;
         xk1_y.yy = xk1.yy - y.yy;
@@ -106,7 +106,7 @@ scggm_refit_obj scggm_refit_step(SMatrix cx, SMatrix cy, scggm_theta &z_theta,
           xk = xk1;
           zk = zk1;
           bconv = 1;
-          break; // line search converged
+          break;  // line search converged
         }
       }
 

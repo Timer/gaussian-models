@@ -50,7 +50,6 @@ private:
   cl_mem accelerate_data = nullptr;
   void inherit(cl_mem accelerate_data) {
     if (this->accelerate_data != nullptr) {
-
       std::cout << "You cannot inherit twice." << std::endl;
       throw "You cannot inherit twice.";
     }
@@ -122,9 +121,9 @@ public:
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     return false;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-    return true; // TODO: measure
+    return true;  // TODO: measure
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
-    return true; // TODO: measure
+    return true;  // TODO: measure
 #else
     return false;
 #endif
@@ -382,7 +381,6 @@ public:
 
       // Apply previous transformations.
       for (int i = 0; i < m; i++) {
-
         // Most of the time is spent in the following dot product.
 
         int kmax = std::min(i, j);
@@ -467,7 +465,7 @@ public:
   }
 
   // TODO: returned matrix changes need to propogate
-  SMatrix list_elems_by_position() { //(:)
+  SMatrix list_elems_by_position() {  //(:)
     decelerate();
     SMatrix M = std::make_shared<Matrix>(rows * cols, 1);
     for (int p = 1; p <= rows * cols; ++p) {
@@ -477,7 +475,7 @@ public:
   }
 
   // TODO: returned matrix changes need to propogate
-  SMatrix list_elems_by_column_position(int col) { //(:, col)
+  SMatrix list_elems_by_column_position(int col) {  //(:, col)
     assert(col > 0 && col <= cols);
     decelerate();
     col -= 1;
@@ -489,7 +487,7 @@ public:
   }
 
   // TODO: returned matrix changes need to propogate
-  SMatrix row_elems_by_position(int start, int end) { //(start:end)
+  SMatrix row_elems_by_position(int start, int end) {  //(start:end)
     decelerate();
     SMatrix M = std::make_shared<Matrix>(1, end - start + 1);
     int index = 0;
@@ -529,7 +527,7 @@ public:
     return M;
   }
 
-  void set_positions(SMatrix list, const double &value) { //(list) = value
+  void set_positions(SMatrix list, const double &value) {  //(list) = value
     assert(list->cols == 1);
     decelerate();
     for (int index = 0; index < list->rows; ++index) {
@@ -537,7 +535,7 @@ public:
     }
   }
 
-  void set_positions(SMatrix list, SMatrix source) { // A(list) = B(list)
+  void set_positions(SMatrix list, SMatrix source) {  // A(list) = B(list)
     assert(list->cols == 1);
     assert(rows == source->rows && cols == source->cols);
     decelerate();
@@ -549,7 +547,7 @@ public:
   }
 
   void set_positions(SMatrix list, SMatrix source,
-                     double delta) { // A(list) = B(list) + delta
+                     double delta) {  // A(list) = B(list) + delta
     assert(list->cols == 1);
     assert(rows == source->rows && cols == source->cols);
     decelerate();
@@ -560,12 +558,12 @@ public:
     }
   }
 
-  void set_position(const int &position, const double &value) { //(1) =>
+  void set_position(const int &position, const double &value) {  //(1) =>
     decelerate();
     data[_matrix_index_for_position(rows, cols, position)] = value;
   }
 
-  double get_position(const int &position) { //(1)
+  double get_position(const int &position) {  //(1)
     decelerate();
     return data[_matrix_index_for_position(rows, cols, position)];
   }
@@ -633,7 +631,7 @@ public:
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
       cublasHandle_t handle;
-      cublasCreate(&handle); // TODO: store and reuse these handle[s]
+      cublasCreate(&handle);  // TODO: store and reuse these handle[s]
       double *C_accelerate_data = nullptr;
       cudaMalloc(&C_accelerate_data, M * N * sizeof(double));
       // We transpose when we don't need to transpose because cublas expects

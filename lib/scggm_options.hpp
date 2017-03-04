@@ -1,5 +1,5 @@
-#include "scggm_theta.hpp"
 #include <memory>
+#include "scggm_theta.hpp"
 
 #ifndef SCGGM_OPTIONS
 #define SCGGM_OPTIONS

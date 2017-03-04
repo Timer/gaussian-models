@@ -1,8 +1,8 @@
+#include <cassert>
+#include <iostream>
 #include "matrix.hpp"
 #include "shared.hpp"
 #include "sparfun.hpp"
-#include <cassert>
-#include <iostream>
 
 int main(int argc, char *argv[]) {
   event_start();
@@ -42,8 +42,7 @@ int main(int argc, char *argv[]) {
   int diag2[3][1] = {{1}, {9}, {17}};
   assert(std::make_shared<Matrix>(mdiag2)->diag() ==
          std::make_shared<Matrix>(diag2));
-  int mdiag3[6][3] = {{1, 2, 3},    {4, 5, 6},    {7, 8, 9},
-                      {10, 11, 12}, {13, 14, 15}, {16, 17, 18}};
+  int mdiag3[6][3] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}, {13, 14, 15}, {16, 17, 18}};
   int diag3[3][1] = {{1}, {5}, {9}};
   assert(std::make_shared<Matrix>(mdiag3)->diag() ==
          std::make_shared<Matrix>(diag3));

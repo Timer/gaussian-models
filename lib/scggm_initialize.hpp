@@ -1,7 +1,7 @@
+#include <memory>
 #include "matrix.hpp"
 #include "scggm_theta.hpp"
 #include "sparfun.hpp"
-#include <memory>
 
 #ifndef scggm_initialize_HPP
 #define scggm_initialize_HPP

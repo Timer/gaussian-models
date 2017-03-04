@@ -39,11 +39,11 @@ void event_start() {
   char *value;
   size_t valueSize;
   clGetDeviceInfo(device, CL_DEVICE_NAME, 0, NULL, &valueSize);
-  value = (char *)malloc(valueSize);
+  value = (char *) malloc(valueSize);
   clGetDeviceInfo(device, CL_DEVICE_NAME, valueSize, value, NULL);
   printf("Device: %s\n", value);
   free(value);
-  props[1] = (cl_context_properties)platform;
+  props[1] = (cl_context_properties) platform;
   cl_ctx = clCreateContext(props, 1, &device, NULL, NULL, &err);
   cl_queue = clCreateCommandQueue(cl_ctx, device, 0, &err);
 #endif

@@ -1,10 +1,10 @@
+#include <cstdio>
+#include <memory>
 #include "scggm_initialize.hpp"
 #include "scggm_options.hpp"
 #include "scggm_refit_step.hpp"
 #include "scggm_sparse_step.hpp"
 #include "scggm_zero_index.hpp"
-#include <cstdio>
-#include <memory>
 
 struct scggm_return {
   bool error = false;
