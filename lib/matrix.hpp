@@ -682,6 +682,11 @@ public:
       std::cout << "\n";
     }
   }
+
+  void save(std::string fileName) {
+    //TODO: this
+    throw "implement me";
+  }
 };
 
 SMatrix eye(int rows, int cols) {
@@ -755,19 +760,24 @@ std::vector<std::string> split(const std::string &s, const std::string &delim,
   return result;
 }
 
-SMatrix load(std::string path) {
+SMatrix load(std::string path, bool transposed) {
   std::ifstream t(path);
   std::string str((std::istreambuf_iterator<char>(t)),
                   std::istreambuf_iterator<char>());
   std::vector<std::string> rows = split(str, "\n");
-  int colC = split(rows[0], "\t").size();
+  auto splitChar = "\t";
+  if (rows[0].find(splitChar) == std::string::npos) {
+    splitChar = ",";
+  }
+  int colC = split(rows[0], splitChar).size();
   SMatrix M = std::make_shared<Matrix>(rows.size(), colC, false);
   for (int r = 0; r < rows.size(); ++r) {
-    auto cols = split(rows[r], "\t");
+    auto cols = split(rows[r], splitChar);
     for (int c = 0; c < colC; ++c) {
       M->data[_matrix_index_for(colC, r, c)] = stod(cols[c]);
     }
   }
+  if (transposed) return M->transpose();
   return M;
 }
 

@@ -14,8 +14,8 @@ int main(int argc, char *argv[]) {
   double lambda_1 = 0.1;
   double lambda_2 = 0.1;
 
-  SMatrix xtrain = load("./data/xtrain.txt"),
-          ytrain = load("./data/ytrain.txt");
+  SMatrix xtrain = load("./data/xtrain.txt", false),
+          ytrain = load("./data/ytrain.txt", false);
 
   printf(
       "sCGGM demo...\nJ = %d, K = %d, sample size = %d\nRegularization "
