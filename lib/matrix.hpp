@@ -358,6 +358,16 @@ public:
     return d;
   }
 
+  double sumAllValue() {
+    decelerate();
+
+    double d = 0;
+    for (int i = 0; i < rows * cols; ++i) {
+      d += data[i];
+    }
+    return d;
+  }
+
   double trace() {
     assert(rows == cols);
     return diag()->sumValue();

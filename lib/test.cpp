@@ -167,6 +167,7 @@ int main(int argc, char *argv[]) {
 
   double mulTest[2][2] = {{1, 2}, {3, 4}};
   assert(std::make_shared<Matrix>(mulTest)->multiplyAllValues() == 24);
+  assert(std::make_shared<Matrix>(mulTest)->sumAllValue() == 10);
 
   event_stop();
   return 0;
