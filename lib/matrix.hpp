@@ -528,6 +528,18 @@ public:
     return M;
   }
 
+  template <class T>
+  std::vector<T> asVector() {
+    assert(rows == 1 || cols == 1);
+    decelerate();
+
+    std::vector<T> v;
+    for (int i = 0; i < rows * cols; ++i) {
+      v.push_back(data[i]);
+    }
+    return std::move(v);
+  }
+
   SMatrix find_positions(const double &alpha, const bool greater,
                          const bool equal) {
     decelerate();
