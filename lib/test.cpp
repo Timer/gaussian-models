@@ -162,6 +162,9 @@ int main(int argc, char *argv[]) {
              ->list_elems_by_column_position(2) ==
          std::make_shared<Matrix>(listColResult));
 
+  double leetM[3][3] = {{1.337, 1.337, 1.337}, {1.337, 1.337, 1.337}, {1.337, 1.337, 1.337}};
+  assert(std::make_shared<Matrix>(3, 3, 1.337) == std::make_shared<Matrix>(leetM));
+
   event_stop();
   return 0;
 }

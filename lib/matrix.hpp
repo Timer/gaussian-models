@@ -78,6 +78,20 @@ public:
     }
   }
 
+  Matrix(int rows, int cols, double value) {
+    assert(rows >= 0 && cols >= 0);
+    this->rows = rows;
+    this->cols = cols;
+    if (rows == 0 || cols == 0)
+      data = nullptr;
+    else {
+      data = new double[rows * cols];
+      for (auto i = 0; i < rows * cols; ++i) {
+        data[i] = value;
+      }
+    }
+  }
+
   Matrix(int rows, int cols) : Matrix(rows, cols, true) {}
 
   template <typename T, std::size_t rowC, std::size_t colC>
