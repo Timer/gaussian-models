@@ -165,6 +165,9 @@ int main(int argc, char *argv[]) {
   double leetM[3][3] = {{1.337, 1.337, 1.337}, {1.337, 1.337, 1.337}, {1.337, 1.337, 1.337}};
   assert(std::make_shared<Matrix>(3, 3, 1.337) == std::make_shared<Matrix>(leetM));
 
+  double mulTest[2][2] = {{1, 2}, {3, 4}};
+  assert(std::make_shared<Matrix>(mulTest)->multiplyAllValues() == 24);
+
   event_stop();
   return 0;
 }

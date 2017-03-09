@@ -340,6 +340,13 @@ public:
     return m;
   }
 
+  double multiplyAllValues() {
+    decelerate();
+    double p = 1;
+    for (int i = 0; i < rows * cols; ++i) p *= data[i];
+    return p;
+  }
+
   double sumValue() {
     assert(cols == 1);
     decelerate();
