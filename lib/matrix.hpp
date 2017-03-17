@@ -204,6 +204,11 @@ public:
     return X;
   }
 
+  void inplace_set(int row, int col, double value) {
+    decelerate();  //TODO: on CPU
+    data[_matrix_index_for(cols, row, col)] = value;
+  }
+
   SMatrix transpose() {
     // TODO have an accelerated option
     decelerate();
@@ -506,6 +511,18 @@ public:
   }
 
   // TODO: returned matrix changes need to propogate
+  SMatrix list_elems_by_row_position(int row) {  //(row, :)
+    assert(row > 0 && row <= rows);
+    decelerate();
+    row -= 1;
+    SMatrix M = std::make_shared<Matrix>(1, cols);
+    for (int c = 0; c < cols; ++c) {
+      M->data[c] = data[_matrix_index_for(cols, row, c)];
+    }
+    return M;
+  }
+
+  // TODO: returned matrix changes need to propogate
   SMatrix list_elems_by_column_position(int col) {  //(:, col)
     assert(col > 0 && col <= cols);
     decelerate();
@@ -538,6 +555,119 @@ public:
       v.push_back(data[i]);
     }
     return std::move(v);
+  }
+
+  SMatrix create_sz() {
+    SMatrix r = std::make_shared<Matrix>(rows, 1);
+    for (int i = 0; i < rows; ++i) {
+      int max = 2;
+      for (int temp = 1, j = 0; j < cols; ++j) {
+        temp = data[_matrix_index_for(cols, i, j)];
+        max = max < temp ? temp : max;
+      }
+      r->data[i] = max;
+    }
+    return r;
+  }
+
+  SMatrix extract_indices(int row_start, int row_stop, int col_start, int col_stop) {
+    SMatrix m = std::make_shared<Matrix>(row_stop - row_start, col_stop - col_start, false);
+    for (int r = 0; r < m->rows; ++r) {
+      for (int c = 0; c < m->cols; ++c) {
+        m->data[_matrix_index_for(m->cols, r, c)] = data[_matrix_index_for(cols, row_start + r, col_start + c)];
+      }
+    }
+    return m;
+  }
+
+  SMatrix extract_list_index(std::vector<int> _rows, int col_start, int col_stop) {
+    SMatrix m = std::make_shared<Matrix>(_rows.size(), col_stop - col_start, false);
+    for (int r = 0; r < m->rows; ++r) {
+      for (int c = 0; c < m->cols; ++c) {
+        m->data[_matrix_index_for(m->cols, r, c)] = data[_matrix_index_for(cols, _rows[r], col_start + c)];
+      }
+    }
+    return m;
+  }
+
+  SMatrix extract_list_index(int row_start, int row_stop, std::vector<int> _cols) {
+    SMatrix m = std::make_shared<Matrix>(row_stop - row_start, _cols.size(), false);
+    for (int r = 0; r < m->rows; ++r) {
+      for (int c = 0; c < m->cols; ++c) {
+        m->data[_matrix_index_for(m->cols, r, c)] = data[_matrix_index_for(cols, row_start + r, _cols[c])];
+      }
+    }
+    return m;
+  }
+
+  void set_list_index(double value, std::vector<int> _rows, int col_start, int col_stop) {
+    const int cRows = _rows.size(), cCols = col_stop - col_start;
+    for (int r = 0; r < cRows; ++r) {
+      for (int c = 0; c < cCols; ++c) {
+        data[_matrix_index_for(cols, _rows[r], col_start + c)] = value;
+      }
+    }
+  }
+
+  void set_list_index(double value, int row_start, int row_stop, std::vector<int> _cols) {
+    const int cRows = row_stop - row_start, cCols = _cols.size();
+    for (int r = 0; r < cRows; ++r) {
+      for (int c = 0; c < cCols; ++c) {
+        data[_matrix_index_for(cols, row_start + r, _cols[c])] = value;
+      }
+    }
+  }
+
+  std::vector<int> adjacency_matrix_parents(const int col) {
+    std::vector<int> l;
+    SMatrix sub = extract_indices(0, rows, col, col + 1);
+    for (int i = 0; i < rows; ++i) {
+      int val = sub->data[i];
+      assert(val == 0 || val == 1);
+      if (val) l.push_back(i);
+    }
+    return std::move(l);
+  }
+
+  SMatrix concat_rows(SMatrix appendMatrix, bool parallel_enabled) {
+    SMatrix m = std::make_shared<Matrix>(rows + appendMatrix->rows, cols, false);
+#pragma omp parallel for if (parallel_enabled) collapse(2)
+    for (int r = 0; r < rows; ++r) {
+      for (int c = 0; c < cols; ++c) {
+        m->data[_matrix_index_for(m->cols, r, c)] = data[_matrix_index_for(cols, r, c)];
+      }
+    }
+#pragma omp parallel for if (parallel_enabled) collapse(2)
+    for (int r = 0; r < appendMatrix->rows; ++r) {
+      for (int c = 0; c < appendMatrix->cols; ++c) {
+        m->data[_matrix_index_for(m->cols, rows + r, c)] = appendMatrix->data[_matrix_index_for(appendMatrix->cols, r, c)];
+      }
+    }
+    return m;
+  }
+
+  SMatrix sum_n_cols(int wCols) {
+    SMatrix m = std::make_shared<Matrix>((rows * cols) / wCols, 1);
+    for (int i = 0; i < rows * cols; ++i) {
+      m->data[i % m->rows] += data[i];
+    }
+    return m;
+  }
+
+  SMatrix lgammaed() {
+    auto m = std::make_shared<Matrix>(rows, cols, false);
+    for (auto i = 0; i < rows * cols; ++i) m->data[i] = lgamma(data[i]);
+    return m;
+  }
+
+  void mk_stochastic(SMatrix ns) {
+    int dim = ns->data[(ns->rows * ns->cols) - 1];
+    int index_count = rows * cols;
+    assert(index_count % dim == 0);
+    SMatrix div = sum_n_cols(dim);
+    for (int i = 0; i < index_count; ++i) {
+      data[i] = data[i] / div->data[i % (index_count / dim)];
+    }
   }
 
   SMatrix find_positions(const double &alpha, const bool greater,
@@ -609,6 +739,16 @@ public:
   double get_position(const int &position) {  //(1)
     decelerate();
     return data[_matrix_index_for_position(rows, cols, position)];
+  }
+
+  void set_position(const int &r_position, const int &c_position, const double &value) {  //(1, 1) =>
+    decelerate();
+    data[_matrix_index_for(cols, r_position - 1, c_position - 1)] = value;
+  }
+
+  double get_position(const int &r_position, const int &c_position) {  //(1, 1)
+    decelerate();
+    return data[_matrix_index_for(cols, r_position - 1, c_position - 1)];
   }
 
   SMatrix triu(int kdiag) {
@@ -727,8 +867,7 @@ public:
   }
 
   void save(std::string fileName) {
-    //TODO: this
-    throw "implement me";
+    assert(1 == 3);
   }
 };
 

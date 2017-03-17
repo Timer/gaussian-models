@@ -10,7 +10,7 @@ fi
 echo "Compiling..."
 if [ $OS == "Darwin" ]; then
   CC="/usr/local/opt/llvm/bin/clang++"
-  FLAGS="$FLAGS -framework Accelerate -framework OpenCL -lclBLAS -L/usr/local/opt/llvm/lib -I/usr/local/opt/llvm/include"
+  FLAGS="$FLAGS -framework Accelerate -framework OpenCL -lclBLAS -L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib -I/usr/local/opt/llvm/include"
 fi
 echo "... using $CC."
 rm *.out

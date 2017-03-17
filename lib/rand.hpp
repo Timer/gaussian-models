@@ -21,4 +21,28 @@ void shuffle_int(int c, int *a) {
   while (c) b = rand_inclusive(0, --c), d = a[c], a[c] = a[b], a[b] = d;
 }
 
+std::vector<int> crossvalind(int size, int k) {
+  int *indices = new int[size];
+  for (int i = 0; i < size; ++i) {
+    indices[i] = i % k;
+  }
+  shuffle_int(size, indices);
+  std::vector<int> v;
+  for (int i = 0; i < size; ++i) {
+    v.push_back(indices[i]);
+  }
+  return std::move(v);
+}
+
+template <class T>
+std::vector<int> findIndexByValue(std::vector<T> &v, T value, bool match) {
+  std::vector<int> o;
+  for (int i = 0; i < v.size(); ++i) {
+    if ((v[i] == value) ^ match) {
+      o.push_back(i);
+    }
+  }
+  return std::move(o);
+}
+
 #endif

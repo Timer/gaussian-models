@@ -131,6 +131,16 @@ double score_family(int j, std::vector<int> ps, SMatrix ns, std::vector<int> dis
   return score;
 }
 
+template <class T>
+std::vector<T> set_difference(std::vector<T> &a, std::vector<T> &b) {
+  std::vector<T> c(a);
+  for (auto &&v : b) {
+    auto pos = std::find(c.begin(), c.end(), v);
+    if (pos != c.end()) c.erase(pos);
+  }
+  return std::move(c);
+}
+
 SMatrix learn_struct_K2(SMatrix data, SMatrix ns, std::vector<int> order, std::string scoring_fn, int max_parents) {
   assert(order.size() == data->rows);
   const int n = data->rows;
@@ -149,9 +159,7 @@ SMatrix learn_struct_K2(SMatrix data, SMatrix ns, std::vector<int> order, std::s
 #endif
     for (; ps.size() <= max_fan_in;) {
       std::vector<int> order_sub(order.begin(), order.begin() + i);
-      std::vector<int> pps(order_sub.size());
-      auto it = std::set_difference(order_sub.begin(), order_sub.end(), ps.begin(), ps.end(), pps.begin());
-      pps.resize(it - pps.begin());
+      auto pps = set_difference<int>(order_sub, ps);
       int nps = pps.size();
       SMatrix pscore = std::make_shared<Matrix>(1, nps);
       for (int pi = 0; pi < nps; ++pi) {

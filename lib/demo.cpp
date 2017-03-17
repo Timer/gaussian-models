@@ -22,12 +22,7 @@ int main(int argc, char *argv[]) {
       "parameters: lambda_1 = %g, lambda_2 = %g\n",
       xtrain->cols, ytrain->cols, xtrain->rows, lambda_1, lambda_2);
 
-  // run SCGGM
-  // auto theta0 = std::make_shared<scggm_theta>();
-  // theta0->xy = load("./data/theta0_xy.txt");
-  // theta0->yy = load("./data/theta0_yy.txt");
   scggm_options options;
-  // options.theta0 = theta0;
   auto opt = scggm(xtrain, ytrain, lambda_1, lambda_2, options);
   if (opt.error) {
     puts("SCGGM error -- terminating.");
