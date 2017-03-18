@@ -867,7 +867,15 @@ public:
   }
 
   void save(std::string fileName) {
-    assert(1 == 3);
+    std::ofstream file;
+    file.open(fileName, std::ios::trunc);
+    for (int r = 0; r < rows; ++r) {
+      for (int c = 0; c < cols - 1; ++c) {
+        file << data[_matrix_index_for(cols, r, c)] << ",";
+      }
+      file << data[_matrix_index_for(cols, r, cols - 1)] << "\n";
+    }
+    file.close();
   }
 };
 
