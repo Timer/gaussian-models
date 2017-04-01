@@ -1,0 +1,12 @@
+Sparse Conditional Gaussian Graphical Models and its learning algorithm are used to perform analysis of genomics data.
+A classic use case for this is to decode SNP perturbation effects of the gene regulatory system.
+The existing implementation of this algorithm has poor performance as it is interpreted (MATLAB).
+Unfortunately, there is not much room for improvement in this regard and will require an alternative implementation.
+An implementation closer to bare metal will allow better performance.
+Which, in turn, will enable running against larger data sets or achieving the same data in less time.
+
+To accomplish this, the library is rewritten in C++ and optimized using various acceleration techniques, such as architecture targeting matrix math functions.
+Additionally, there is conditional (when it improves performance) use of GPGPU devices, which can be in an OpenCL or CUDA mode.
+
+The correctness of this implementation is validated by comparing the output of the new implementation with the old implementation given a variety of data sets.
+The effectiveness and time deltas of this implementation are evaluated which determines the overall usefulness of this project.
