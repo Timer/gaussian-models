@@ -490,12 +490,12 @@ public:
     return X;
   }
 
-  bool identity() {
+  bool isIdentity() {
     assert(rows == cols);
     decelerate();
     for (int i = 0; i < rows; ++i) {
       double v = data[_matrix_index_for(cols, i, i)];
-      if (std::abs(1 - v) >= std::numeric_limits<double>::epsilon())
+      if (std::abs(1 - v) >= /*std::numeric_limits<double>::epsilon()*/ 0.0001)
         return false;
     }
     return true;

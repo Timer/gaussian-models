@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
   int mDet2[3][3] = {{1, 2, 0}, {-1, 1, 1}, {1, 2, 3}};
   assert((std::make_shared<Matrix>(mDet2)->inverse() *
           std::make_shared<Matrix>(mDet2))
-             ->identity());
+             ->isIdentity());
   int sumA[2][3] = {{1, 2, 3}, {4, 5, 6}}, sumB[2][3] = {{4, 5, 6}, {1, 2, 3}};
   int mSum1[2][3] = {{5, 7, 9}, {5, 7, 9}};
   int mSub1[2][3] = {{-3, -3, -3}, {3, 3, 3}};
@@ -172,6 +172,9 @@ int main(int argc, char *argv[]) {
   double listA[1][4] = {{1, 2, 3, 4}};
   std::vector<int> vecA = {1, 2, 3, 4};
   assert(std::make_shared<Matrix>(listA)->asVector<int>() == vecA);
+
+  double lgR[3][3] = {{lgamma(17), lgamma(22), lgamma(27)}, {lgamma(22), lgamma(29), lgamma(36)}, {lgamma(27), lgamma(36), lgamma(45)}};
+  assert((std::make_shared<Matrix>(mulA)->lgammaed()->inverse() * std::make_shared<Matrix>(lgR))->isIdentity());
 
   event_stop();
   return 0;
