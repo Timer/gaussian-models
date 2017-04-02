@@ -559,6 +559,7 @@ public:
   }
 
   SMatrix create_sz() {
+    decelerate();
     SMatrix r = std::make_shared<Matrix>(rows, 1);
     for (int i = 0; i < rows; ++i) {
       int max = 2;
@@ -572,6 +573,7 @@ public:
   }
 
   SMatrix extract_indices(int row_start, int row_stop, int col_start, int col_stop) {
+    decelerate();
     SMatrix m = std::make_shared<Matrix>(row_stop - row_start, col_stop - col_start, false);
     for (int r = 0; r < m->rows; ++r) {
       for (int c = 0; c < m->cols; ++c) {
@@ -582,6 +584,7 @@ public:
   }
 
   SMatrix extract_list_index(std::vector<int> _rows, int col_start, int col_stop) {
+    decelerate();
     SMatrix m = std::make_shared<Matrix>(_rows.size(), col_stop - col_start, false);
     for (int r = 0; r < m->rows; ++r) {
       for (int c = 0; c < m->cols; ++c) {
@@ -592,6 +595,7 @@ public:
   }
 
   SMatrix extract_list_index(int row_start, int row_stop, std::vector<int> _cols) {
+    decelerate();
     SMatrix m = std::make_shared<Matrix>(row_stop - row_start, _cols.size(), false);
     for (int r = 0; r < m->rows; ++r) {
       for (int c = 0; c < m->cols; ++c) {
@@ -602,6 +606,7 @@ public:
   }
 
   void set_list_index(double value, std::vector<int> _rows, int col_start, int col_stop) {
+    decelerate();
     const int cRows = _rows.size(), cCols = col_stop - col_start;
     for (int r = 0; r < cRows; ++r) {
       for (int c = 0; c < cCols; ++c) {
@@ -611,6 +616,7 @@ public:
   }
 
   void set_list_index(double value, int row_start, int row_stop, std::vector<int> _cols) {
+    decelerate();
     const int cRows = row_stop - row_start, cCols = _cols.size();
     for (int r = 0; r < cRows; ++r) {
       for (int c = 0; c < cCols; ++c) {
@@ -620,6 +626,7 @@ public:
   }
 
   std::vector<int> adjacency_matrix_parents(const int col) {
+    decelerate();
     std::vector<int> l;
     SMatrix sub = extract_indices(0, rows, col, col + 1);
     for (int i = 0; i < rows; ++i) {
@@ -631,6 +638,7 @@ public:
   }
 
   SMatrix concat_rows(SMatrix appendMatrix, bool parallel_enabled) {
+    decelerate();
     SMatrix m = std::make_shared<Matrix>(rows + appendMatrix->rows, cols, false);
 #pragma omp parallel for if (parallel_enabled) collapse(2)
     for (int r = 0; r < rows; ++r) {
@@ -648,6 +656,7 @@ public:
   }
 
   SMatrix sum_n_cols(int wCols) {
+    decelerate();
     SMatrix m = std::make_shared<Matrix>((rows * cols) / wCols, 1);
     for (int i = 0; i < rows * cols; ++i) {
       m->data[i % m->rows] += data[i];
@@ -704,13 +713,15 @@ public:
 #endif
     } else {
       decelerate();
-      for (auto i = 0; i < rows * cols; ++i)
+      for (auto i = 0; i < rows * cols; ++i) {
         C->data[i] = lgamma(data[i]);
+      }
     }
     return C;
   }
 
   void mk_stochastic(SMatrix ns) {
+    decelerate();
     int dim = ns->data[(ns->rows * ns->cols) - 1];
     int index_count = rows * cols;
     assert(index_count % dim == 0);
@@ -917,6 +928,7 @@ public:
   }
 
   void save(std::string fileName) {
+    decelerate();
     std::ofstream file;
     file.open(fileName, std::ios::trunc);
     for (int r = 0; r < rows; ++r) {
@@ -938,6 +950,7 @@ SMatrix eye(int rows, int cols) {
 }
 
 SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
+  m1->print();
   assert(m1->rows == m2->rows && m1->cols == m2->cols);
   m1->decelerate();
   m2->decelerate();
