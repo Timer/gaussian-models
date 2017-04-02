@@ -127,7 +127,7 @@ public:
 #endif
   }
 
-  bool shouldAccelerate() {
+  bool shouldAccelerate(bool linear) {
     if (accelerated) {
       return true;
     }
@@ -205,7 +205,7 @@ public:
   }
 
   void inplace_set(int row, int col, double value) {
-    decelerate();  //TODO: on CPU
+    decelerate();  //TODO: on GPU
     data[_matrix_index_for(cols, row, col)] = value;
   }
 
@@ -654,10 +654,59 @@ public:
     return m;
   }
 
+#if ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+  const char *lgammaKernelSource =
+      "\n"
+      "#pragma OPENCL EXTENSION cl_khr_fp64 : enable    \n"
+      "__kernel void vec_lgamma(__global double *a,     \n"
+      "                         __global double *c,     \n"
+      "                         const unsigned int n)   \n"
+      "{                                                \n"
+      "    const unsigned int id = get_global_id(0);    \n"
+      "    if (id < n)                                  \n"
+      "        c[id] = lgamma(a[id]);                   \n"
+      "}                                                \n"
+      "\n";
+#endif
+
   SMatrix lgammaed() {
-    auto m = std::make_shared<Matrix>(rows, cols, false);
-    for (auto i = 0; i < rows * cols; ++i) m->data[i] = lgamma(data[i]);
-    return m;
+    auto C = std::make_shared<Matrix>(rows, cols, false);
+    if (shouldAccelerate(true)) {
+      accelerate();
+
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+      double *C_accelerate_data = nullptr;
+      cudaMalloc(&C_accelerate_data, rows * cols * sizeof(double));
+      //TODO: this
+      C->inherit(C_accelerate_data);
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+      auto N = rows * cols;
+      cl_int err;
+      cl_event event;
+      auto C_accelerate_data = clCreateBuffer(
+          cl_ctx, CL_MEM_READ_WRITE, rows * cols * sizeof(double), nullptr, &err);
+      auto program = clCreateProgramWithSource(cl_ctx, 1, (const char **) &lgammaKernelSource, NULL, &err);
+      clBuildProgram(program, 0, nullptr, nullptr, nullptr, nullptr);
+      auto kernel = clCreateKernel(program, "vec_lgamma", &err);  //TODO: reuse kernel (& program)
+      err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &accelerate_data);
+      err = clSetKernelArg(kernel, 1, sizeof(cl_mem), &C_accelerate_data);
+      err = clSetKernelArg(kernel, 2, sizeof(unsigned int), &N);
+      size_t localSize = 64;
+      size_t globalSize = std::ceil(N / (float) localSize) * localSize;
+      err = clEnqueueNDRangeKernel(cl_queue, kernel, 1, nullptr, &globalSize, &localSize, 0, nullptr, nullptr);
+      clFinish(cl_queue);
+      clReleaseProgram(program);
+      clReleaseKernel(kernel);
+      C->inherit(C_accelerate_data);
+#else
+      assert(false);
+#endif
+    } else {
+      decelerate();
+      for (auto i = 0; i < rows * cols; ++i)
+        C->data[i] = lgamma(data[i]);
+    }
+    return C;
   }
 
   void mk_stochastic(SMatrix ns) {
@@ -808,7 +857,7 @@ public:
     assert(J == K);
 
     auto C = std::make_shared<Matrix>(M, N, false);
-    if (shouldAccelerate()) {
+    if (shouldAccelerate(false)) {
       accelerate();
       B->accelerate();
 
@@ -823,13 +872,13 @@ public:
                   tranB ? CUBLAS_OP_N : CUBLAS_OP_T, M, N, K, 1.0,
                   accelerate_data, cols, B->accelerate_data, B->cols, 0.0,
                   C_accelerate_data, C->cols);
-      // TODO: force accelerate C (provide memory): C_accelerate_data
+      C->inherit(C_accelerate_data);
       cublasDestroy(handle);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
       cl_int err;
       cl_event event;
       auto C_accelerate_data = clCreateBuffer(
-          cl_ctx, CL_MEM_READ_ONLY, M * N * sizeof(double), NULL, &err);
+          cl_ctx, CL_MEM_READ_WRITE, M * N * sizeof(double), NULL, &err);
       err = clblasDgemm(clblasRowMajor, tranA ? clblasTrans : clblasNoTrans,
                         tranB ? clblasTrans : clblasNoTrans, M, N, K, 1.0,
                         accelerate_data, 0, cols, B->accelerate_data, 0,
