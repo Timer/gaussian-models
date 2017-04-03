@@ -173,9 +173,19 @@ int main(int argc, char *argv[]) {
   std::vector<int> vecA = {1, 2, 3, 4};
   assert(std::make_shared<Matrix>(listA)->asVector<int>() == vecA);
 
-  double lgR[3][3] = {{lgamma(17), lgamma(22), lgamma(27)}, {lgamma(22), lgamma(29), lgamma(36)}, {lgamma(27), lgamma(36), lgamma(45)}};
-  assert((std::make_shared<Matrix>(mulA)->lgammaed()->inverse() * std::make_shared<Matrix>(lgR))->isIdentity());
-
+  double lgTest[4][4] = {
+      {2.25, 6.25, 111.25, 0.125},
+      {0.125, 0.125, 0.125, 0.125},
+      {494.25, 36, 45, 0.125},
+      {0.125, 0.125, 0.125, 0.125}};
+  double lgR[4][4] = {
+      {lgamma(2.25), lgamma(6.25), lgamma(111.25), lgamma(0.125)},
+      {lgamma(9881.25), lgamma(0.125), lgamma(95.125), lgamma(0.125)},
+      {lgamma(494.25), lgamma(36), lgamma(45), lgamma(0.125)},
+      {lgamma(0.125), lgamma(0.125), lgamma(0.125), lgamma(0.125)}};
+  assert((std::make_shared<Matrix>(lgTest)->lgammaed()->inverse() * std::make_shared<Matrix>(lgR))->isIdentity());
+  std::make_shared<Matrix>(lgTest)->lgammaed()->print();
+  assert((std::make_shared<Matrix>(lgTest)->lgammaed() - std::make_shared<Matrix>(lgTest)->lgammaed())->sumAllValue() == 0);
   event_stop();
   return 0;
 }

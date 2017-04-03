@@ -23,10 +23,8 @@ double dirichlet_score_family(SMatrix counts, SCPD cpd) {
   SMatrix LU = lu_mat->sum_n_cols(ns_self->data[0]);
   SMatrix alpha_ij = prior->sum_n_cols(ns_self->data[0]);
   SMatrix N_ij = counts->sum_n_cols(ns_self->data[0]);
-  SMatrix gamma_alpha = alpha_ij->lgammaed();
   SMatrix alpha_N = N_ij + alpha_ij;
-  SMatrix gamma_alpha_N = alpha_N->lgammaed();
-  SMatrix LV = gamma_alpha - gamma_alpha_N;
+  SMatrix LV = alpha_ij->lgammaed() - alpha_N->lgammaed();
   SMatrix LU_LV = LU + LV;
   double score = LU_LV->sumAllValue();
   return score;

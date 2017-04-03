@@ -172,6 +172,22 @@ public:
     accelerated = true;
   }
 
+#if ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+  void checkClError(cl_int res) {
+    if (res != CL_SUCCESS) {
+      cl_int errs[] = {CL_INVALID_COMMAND_QUEUE, CL_INVALID_CONTEXT, CL_INVALID_MEM_OBJECT, CL_INVALID_VALUE, CL_INVALID_EVENT_WAIT_LIST, CL_MEM_OBJECT_ALLOCATION_FAILURE, CL_OUT_OF_HOST_MEMORY};
+      std::string strs[] = {"CL_INVALID_COMMAND_QUEUE", "CL_INVALID_CONTEXT", "CL_INVALID_MEM_OBJECT", "CL_INVALID_VALUE", "CL_INVALID_EVENT_WAIT_LIST", "CL_MEM_OBJECT_ALLOCATION_FAILURE", "CL_OUT_OF_HOST_MEMORY"};
+      for (auto i = 0; i < 7; ++i) {
+        if (res == errs[i]) {
+          puts(strs[i].c_str());
+          break;
+        }
+      }
+      assert(res == CL_SUCCESS);
+    }
+  }
+#endif
+
   void decelerate() {
     if (!accelerated) {
       return;
@@ -183,8 +199,10 @@ public:
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
-    clEnqueueReadBuffer(cl_queue, accelerate_data, CL_TRUE, 0, size, data, 0,
-                        NULL, NULL);
+    auto res = clFinish(cl_queue);
+    checkClError(res);
+    res = clEnqueueReadBuffer(cl_queue, accelerate_data, CL_TRUE, 0, size, data, 0, NULL, NULL);
+    checkClError(res);
 #else
     assert(false);
 #endif
@@ -672,9 +690,9 @@ public:
       "                         __global double *c,     \n"
       "                         const unsigned int n)   \n"
       "{                                                \n"
-      "    const unsigned int id = get_global_id(0);    \n"
-      "    if (id < n)                                  \n"
-      "        c[id] = lgamma(a[id]);                   \n"
+      "  const unsigned int id = get_global_id(0);      \n"
+      "  if (id < n)                                    \n"
+      "    c[id] = lgamma(a[id]);                       \n"
       "}                                                \n"
       "\n";
 #endif
@@ -694,7 +712,8 @@ public:
       cl_int err;
       cl_event event;
       auto C_accelerate_data = clCreateBuffer(
-          cl_ctx, CL_MEM_READ_WRITE, rows * cols * sizeof(double), nullptr, &err);
+          cl_ctx, CL_MEM_WRITE_ONLY, rows * cols * sizeof(double), nullptr, &err);
+      checkClError(err);
       auto program = clCreateProgramWithSource(cl_ctx, 1, (const char **) &lgammaKernelSource, NULL, &err);
       clBuildProgram(program, 0, nullptr, nullptr, nullptr, nullptr);
       auto kernel = clCreateKernel(program, "vec_lgamma", &err);  //TODO: reuse kernel (& program)
