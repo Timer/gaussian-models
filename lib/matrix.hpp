@@ -20,8 +20,8 @@
 #endif
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-#include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <cuda_runtime.h>
 #endif
 
 class Matrix;
@@ -47,6 +47,14 @@ private:
   bool accelerated = false;
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
   double *accelerate_data = nullptr;
+  void inherit(double *accelerate_data) {
+    if (this->accelerate_data != nullptr) {
+      std::cout << "You cannot inherit twice." << std::endl;
+      throw "You cannot inherit twice.";
+    }
+    this->accelerated = true;
+    this->accelerate_data = accelerate_data;
+  }
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
   cl_mem accelerate_data = nullptr;
   void inherit(cl_mem accelerate_data) {
