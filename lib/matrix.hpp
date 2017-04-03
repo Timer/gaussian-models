@@ -708,7 +708,11 @@ public:
 
   SMatrix lgammaed() {
     auto C = std::make_shared<Matrix>(rows, cols, false);
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    if (false) {
+#else
     if (shouldAccelerate(true)) {
+#endif
       accelerate();
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
@@ -737,7 +741,7 @@ public:
       clReleaseKernel(kernel);
       C->inherit(C_accelerate_data);
 #else
-      assert(false);
+    assert(false);
 #endif
     } else {
       decelerate();
@@ -932,7 +936,7 @@ public:
       err = clWaitForEvents(1, &event);
       C->inherit(C_accelerate_data);
 #else
-      assert(false);
+    assert(false);
 #endif
     } else {
       decelerate();
