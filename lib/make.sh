@@ -4,7 +4,8 @@ CC=g++
 OS=`uname`
 FLAGS="-std=c++11 -fopenmp -Ofast"
 if [ $OS == "Linux" ]; then
-  FLAGS="$FLAGS -lblas -I/usr/local/cuda-8.0/include -L/usr/local/cuda-8.0/lib64 -lcublas"
+  CC="nvcc"
+  FLAGS="-std=c++11 -O3 -lblas -lcublas -Xcompiler -fopenmp"
 fi
 if command -v clang-format >/dev/null 2>&1; then
   echo "Linting..."
