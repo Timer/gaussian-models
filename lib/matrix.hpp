@@ -20,7 +20,8 @@
 #endif
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-#include "cublas_v2.h"
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
 #endif
 
 class Matrix;
