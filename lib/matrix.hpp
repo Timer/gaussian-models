@@ -20,6 +20,7 @@
 #endif
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+#include <blas.h>
 #include <cublas_v2.h>
 #include <cuda_runtime.h>
 #endif
