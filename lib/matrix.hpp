@@ -969,7 +969,6 @@ SMatrix eye(int rows, int cols) {
 }
 
 SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
-  m1->print();
   assert(m1->rows == m2->rows && m1->cols == m2->cols);
   m1->decelerate();
   m2->decelerate();
