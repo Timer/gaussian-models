@@ -9,7 +9,7 @@ if [ $OS == "Linux" ]; then
 fi
 if command -v clang-format >/dev/null 2>&1; then
   echo "Linting..."
-  clang-format -i *.cpp *.hpp
+  clang-format -i *.cpp *.hpp *.cu
 fi
 echo "Compiling..."
 if [ $OS == "Darwin" ]; then
@@ -19,6 +19,7 @@ fi
 echo "... using $CC."
 rm *.out
 $CC $FLAGS -c $(find . -name \*.cpp) -lm
+$CC $FLAGS -c $(find . -name \*.cu) -lm
 #if [ $OS == "Darwin" ]; then
 #  rm benchmark-native.o
 #fi
