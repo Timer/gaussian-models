@@ -1,4 +1,7 @@
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+#include <cuda_runtime_api.h>
+#include <cuda.h>
+
 template <class T>
 __host__ void getLaunchConfiguration(T t, int n, int *blocks, int *threads) {
   cudaOccupancyMaxPotentialBlockSize(blocks, threads, t, 0, n);

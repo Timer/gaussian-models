@@ -22,7 +22,8 @@
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
 #include <cblas.h>
 #include <cublas_v2.h>
-#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <cuda.h>
 #include "cumatrix.cu"
 #endif
 
