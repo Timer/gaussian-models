@@ -184,7 +184,6 @@ int main(int argc, char *argv[]) {
       {lgamma(494.25), lgamma(36), lgamma(45), lgamma(0.125)},
       {lgamma(0.125), lgamma(0.125), lgamma(0.125), lgamma(0.125)}};
   assert((std::make_shared<Matrix>(lgTest)->lgammaed()->inverse() * std::make_shared<Matrix>(lgR))->isIdentity());
-  std::make_shared<Matrix>(lgTest)->lgammaed()->print();
   assert((std::make_shared<Matrix>(lgTest)->lgammaed() - std::make_shared<Matrix>(lgTest)->lgammaed())->sumAllValue() == 0);
   event_stop();
   return 0;
