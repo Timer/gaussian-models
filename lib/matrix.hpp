@@ -24,7 +24,7 @@
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 #include <cuda.h>
-#include "cumatrix.cu"
+#include "cumatrix.hpp"
 #endif
 
 class Matrix;
