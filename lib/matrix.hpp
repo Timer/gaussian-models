@@ -22,8 +22,8 @@
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
 #include <cblas.h>
 #include <cublas_v2.h>
-#include <cuda_runtime_api.h>
 #include <cuda.h>
+#include <cuda_runtime_api.h>
 #include "cumatrix.hpp"
 #endif
 
@@ -718,14 +718,7 @@ public:
       accelerate();
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-      auto N = rows * cols;
-      double *C_accelerate_data = nullptr;
-      cudaMalloc(&C_accelerate_data, rows * cols * sizeof(double));
-      int blocks, threads;
-      getLaunchConfiguration(vec_lgamma, N, &blocks, &threads);
-      vec_lgamma<<<blocks, threads>>>(accelerate_data, C_accelerate_data, N);
-      cudaDeviceSynchronize();
-      C->inherit(C_accelerate_data);
+      C->inherit(cu_lgammed(rows, cols, accelerate_data));
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
       auto N = rows * cols;
       cl_int err;
