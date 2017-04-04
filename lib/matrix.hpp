@@ -165,7 +165,7 @@ public:
     assert(false);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     if (accelerate_data == nullptr) {
-      cudaMalloc(&accelerate_data, size);
+      cudaMalloc((void **) &accelerate_data, size);
     }
     cudaMemcpy(accelerate_data, data, size, cudaMemcpyHostToDevice);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
@@ -908,7 +908,7 @@ public:
       cublasHandle_t handle;
       cublasCreate(&handle);  // TODO: store and reuse these handle[s]
       double *C_accelerate_data = nullptr;
-      cudaMalloc(&C_accelerate_data, M * N * sizeof(double));
+      cudaMalloc((void **) &C_accelerate_data, M * N * sizeof(double));
       // We transpose when we don't need to transpose because cublas expects
       // col major but we store in row major.
       const auto alpha = 1.0, beta = 0.0;
