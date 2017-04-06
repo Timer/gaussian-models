@@ -228,7 +228,18 @@ int main(int argc, char *argv[]) {
     m3->accelerate();
     e = now();
     auto ms3 = to_milliseconds(s, e);
-    printf("Copy took %d, %d, %d ms.", ms1, ms2, ms3);
+    printf("Copy took %d, %d, %d ms.\n", ms1, ms2, ms3);
+
+    m3 = m3->transpose();
+    m3->accelerate();
+
+    s = now();
+    auto m4 = m2 * m3;
+    m4->noop();
+    e = now();
+    auto ms4 = to_milliseconds(s, e);
+    printf("Mult took %d ms.\n", ms4);
+
     puts("");
   }
 #endif

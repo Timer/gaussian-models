@@ -147,8 +147,10 @@ public:
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     return false;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    const int MS_PER_10M_ELEMS = 16;
     return true;  // TODO: measure
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+    const int MS_PER_10M_ELEMS = 55;
     return true;  // TODO: measure
 #else
     return false;
@@ -957,6 +959,9 @@ public:
       }
       std::cout << "\n";
     }
+  }
+
+  void noop() {
   }
 
   void save(std::string fileName) {
