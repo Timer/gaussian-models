@@ -949,10 +949,10 @@ public:
       B->decelerate();
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
       if (tranA) {
-        return transpose() * B;
+        return transpose()->multiply(B, false, transB);
       }
       if (tranB) {
-        return std::make_shared<Matrix>(*this) * B->transpose();
+        return multiply(B->transpose(), false, false);
       }
       for (auto r = 0; r < C->rows; ++r) {
         for (auto c = 0; c < C->cols; ++c) {
