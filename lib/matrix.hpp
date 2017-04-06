@@ -152,7 +152,7 @@ public:
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     const int MS_PER_1M_CPU_MULT = 367;
     const int MS_PER_10M_ELEMS = 16;
-    return true;
+    return false;
 //return linear ? false : rows * cols >= _1M;  // TODO: measure
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     const int MS_PER_1M_CPU_MULT = 590;
