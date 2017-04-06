@@ -928,6 +928,7 @@ public:
       C->inherit(C_accelerate_data);
       cublasDestroy(handle);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+      puts("hyperspeed me");
       cl_int err;
       cl_event event;
       auto C_accelerate_data = clCreateBuffer(
