@@ -29,6 +29,7 @@
 
 class Matrix;
 typedef std::shared_ptr<Matrix> SMatrix;
+SMatrix operator*(const SMatrix &m1, const SMatrix &m2);
 
 SMatrix eye(int rows, int cols);
 
