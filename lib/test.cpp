@@ -1,8 +1,22 @@
 #include <cassert>
+#include <chrono>
 #include <iostream>
 #include "matrix.hpp"
 #include "shared.hpp"
 #include "sparfun.hpp"
+
+inline std::chrono::time_point<std::chrono::high_resolution_clock> now() {
+  return std::chrono::high_resolution_clock::now();
+}
+
+inline int to_seconds(std::chrono::time_point<std::chrono::high_resolution_clock> t1, std::chrono::time_point<std::chrono::high_resolution_clock> t2) {
+  std::chrono::duration<double> diff = t2 - t1;
+  return diff.count();
+}
+
+inline int to_milliseconds(std::chrono::time_point<std::chrono::high_resolution_clock> t1, std::chrono::time_point<std::chrono::high_resolution_clock> t2) {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+}
 
 int main(int argc, char *argv[]) {
   event_start();
@@ -185,6 +199,40 @@ int main(int argc, char *argv[]) {
       {lgamma(0.125), lgamma(0.125), lgamma(0.125), lgamma(0.125)}};
   assert((std::make_shared<Matrix>(lgTest)->lgammaed()->inverse() * std::make_shared<Matrix>(lgR))->isIdentity());
   assert((std::make_shared<Matrix>(lgTest)->lgammaed() - std::make_shared<Matrix>(lgTest)->lgammaed())->sumAllValue() == 0);
+
+#if ACCELERATE_MODE == ACCELERATE_MODE_NONE
+#else
+#if ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+  puts("Testing OpenCL");
+#endif
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+  puts("Testing CUDA");
+#endif
+
+  for (int m = 1; m <= 1000000; m *= 10) {
+    printf("Prepping %dx100 test ...\n", m);
+    auto
+        m1 = sprand(m, 100, 1),
+        m2 = sprand(m, 100, 1),
+        m3 = sprand(m, 100, 1);
+    puts("Testing move ...");
+    auto s = now();
+    m1->accelerate();
+    auto e = now();
+    auto ms1 = to_milliseconds(s, e);
+    s = now();
+    m2->accelerate();
+    e = now();
+    auto ms2 = to_milliseconds(s, e);
+    s = now();
+    m3->accelerate();
+    e = now();
+    auto ms3 = to_milliseconds(s, e);
+    printf("Copy took %d, %d, %d ms.", ms1, ms2, ms3);
+    puts("");
+  }
+#endif
+
   event_stop();
   return 0;
 }
