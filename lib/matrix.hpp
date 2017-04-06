@@ -914,7 +914,6 @@ public:
       B->accelerate();
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-      puts("hy");
       cublasHandle_t handle;
       cublasCreate(&handle);  // TODO: store and reuse these handle[s]
       double *C_accelerate_data = nullptr;
