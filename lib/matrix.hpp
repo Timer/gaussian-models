@@ -951,7 +951,7 @@ public:
         return transpose() * B;
       }
       if (tranB) {
-        return *this * B->transpose();
+        return std::make_shared<Matrix>(*this) * B->transpose();
       }
       for (auto r = 0; r < C->rows; ++r) {
         for (auto c = 0; c < C->cols; ++c) {
