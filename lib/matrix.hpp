@@ -150,10 +150,45 @@ public:
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     return false;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    /*
+    Prepping 1024x100 test ...
+    Mult took 100 ms.
+
+    Prepping 2048x100 test ...
+    Mult took 403 ms.
+
+    Prepping 4096x100 test ...
+    Mult took 1598 ms.
+
+    Prepping 8192x100 test ...
+    Mult took 6049 ms.
+
+    Prepping 16384x100 test ...
+    Mult took 28122 ms.
+
+    Prepping 8192x100 test ...
+    Testing move ...
+    Copy took 1, 1, 1 ms.
+    Mult took 16 ms.
+
+    Prepping 16384x100 test ...
+    Testing move ...
+    Copy took 3, 2, 2 ms.
+    Mult took 62 ms.
+
+    Prepping 32768x100 test ...
+    Testing move ...
+    Copy took 5, 5, 5 ms.
+    Mult took 245 ms.
+
+    Prepping 65536x100 test ...
+    Testing move ...
+    Copy took 11, 10, 10 ms.
+    Mult took 31 ms.
+    */
     const int MS_PER_1M_CPU_MULT = 367;
     const int MS_PER_10M_ELEMS = 16;
-    return false;
-//return linear ? false : rows * cols >= _1M;  // TODO: measure
+    return linear ? false : rows * cols >= 204800;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     const int MS_PER_1M_CPU_MULT = 590;
     const int MS_PER_1M_MULT = 466;
