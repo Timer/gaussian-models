@@ -144,14 +144,18 @@ public:
       return true;
     }
 
+    const int _1M = 1000000;
+
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     return false;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     const int MS_PER_10M_ELEMS = 16;
     return true;  // TODO: measure
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+    const int MS_PER_1M_CPU_MULT = 590;
+    const int MS_PER_1M_MULT = 466;
     const int MS_PER_10M_ELEMS = 55;
-    return true;  // TODO: measure
+    return linear?false:m*n >=_1M;  // TODO: measure
 #else
     return false;
 #endif

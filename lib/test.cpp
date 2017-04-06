@@ -201,7 +201,8 @@ int main(int argc, char *argv[]) {
   assert((std::make_shared<Matrix>(lgTest)->lgammaed() - std::make_shared<Matrix>(lgTest)->lgammaed())->sumAllValue() == 0);
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
-#else
+  puts("Testing CPU ...");
+#endif
 #if ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
   puts("Testing OpenCL");
 #endif
@@ -210,15 +211,19 @@ int main(int argc, char *argv[]) {
 #endif
 
   for (int m = 1; m <= 1000000; m *= 10) {
+    auto s = now(), e = now();
     printf("Prepping %dx100 test ...\n", m);
     auto
         m1 = sprand(m, 100, 1),
         m2 = sprand(m, 100, 1),
         m3 = sprand(m, 100, 1);
+#if ACCELERATE_MODE == ACCELERATE_MODE_NONE
+    m3 = m3->transpose();
+#else
     puts("Testing move ...");
-    auto s = now();
+    s = now();
     m1->accelerate();
-    auto e = now();
+    e = now();
     auto ms1 = to_milliseconds(s, e);
     s = now();
     m2->accelerate();
@@ -232,6 +237,7 @@ int main(int argc, char *argv[]) {
 
     m3 = m3->transpose();
     m3->accelerate();
+#endif
 
     s = now();
     auto m4 = m2 * m3;
@@ -242,7 +248,6 @@ int main(int argc, char *argv[]) {
 
     puts("");
   }
-#endif
 
   event_stop();
   return 0;
