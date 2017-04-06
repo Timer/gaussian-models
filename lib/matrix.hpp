@@ -151,6 +151,36 @@ public:
     return false;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     /*
+    Prepping 1x100 test ...
+    Mult took 0 ms.
+
+    Prepping 2x100 test ...
+    Mult took 0 ms.
+
+    Prepping 4x100 test ...
+    Mult took 0 ms.
+
+    Prepping 8x100 test ...
+    Mult took 0 ms.
+
+    Prepping 16x100 test ...
+    Mult took 0 ms.
+
+    Prepping 32x100 test ...
+    Mult took 0 ms.
+
+    Prepping 64x100 test ...
+    Mult took 0 ms.
+
+    Prepping 128x100 test ...
+    Mult took 1 ms.
+
+    Prepping 256x100 test ...
+    Mult took 6 ms.
+
+    Prepping 512x100 test ...
+    Mult took 25 ms.
+
     Prepping 1024x100 test ...
     Mult took 100 ms.
 
