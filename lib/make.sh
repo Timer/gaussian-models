@@ -19,7 +19,9 @@ fi
 echo "... using $CC."
 rm *.out
 $CC $FLAGS -c $(find . -name \*.cpp) -lm
-$CC $FLAGS -c $(find . -name \*.cu) -lm
+if [ $OS == "Linux" ]; then
+  $CC $FLAGS -c $(find . -name \*.cu) -lm
+fi
 #if [ $OS == "Darwin" ]; then
 #  rm benchmark-native.o
 #fi
