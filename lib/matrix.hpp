@@ -947,12 +947,12 @@ public:
       decelerate();
       B->decelerate();
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-      auto C = std::make_shared<Matrix>(A.rows, B.cols);
+      auto C = std::make_shared<Matrix>(rows, B->cols);
       for (auto r = 0; r < C->rows; ++r) {
         for (auto c = 0; c < C->cols; ++c) {
 #pragma omp parallel for
-          for (auto inner = 0; inner < A.cols; ++inner) {
-            C->data[_matrix_index_for(C->cols, r, c)] += A.data[_matrix_index_for(A.cols, r, inner)] * B.data[_matrix_index_for(B.cols, inner, c)];
+          for (auto inner = 0; inner < cols; ++inner) {
+            C->data[_matrix_index_for(C->cols, r, c)] += data[_matrix_index_for(cols, r, inner)] * B->data[_matrix_index_for(B->cols, inner, c)];
           }
         }
       }
