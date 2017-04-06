@@ -949,7 +949,7 @@ public:
       B->decelerate();
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
       if (tranA) {
-        return transpose()->multiply(B, false, transB);
+        return transpose()->multiply(B, false, tranB);
       } else if (tranB) {
         return multiply(B->transpose(), false, false);
       }
