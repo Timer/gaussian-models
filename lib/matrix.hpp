@@ -953,14 +953,20 @@ public:
       } else if (tranB) {
         return multiply(B->transpose(), false, false);
       }
-      for (auto r = 0; r < C->rows; ++r) {
-        for (auto c = 0; c < C->cols; ++c) {
-#pragma omp parallel for
-          for (auto inner = 0; inner < cols; ++inner) {
-            C->data[_matrix_index_for(C->cols, r, c)] += data[_matrix_index_for(cols, r, inner)] * B->data[_matrix_index_for(B->cols, inner, c)];
+      double *Bcolj = new double[cols];
+      for (int j = 0; j < B->cols; j++) {
+        for (int k = 0; k < cols; k++) {
+          Bcolj[k] = B->data[_matrix_index_for(B->cols, k, j)];
+        }
+        for (int i = 0; i < rows; i++) {
+          double s = 0;
+          for (int k = 0; k < cols; k++) {
+            s += data[_matrix_index_for(cols, i, k)] * Bcolj[k];
           }
+          C->data[_matrix_index_for(C->cols, i, j)] = s;
         }
       }
+      delete[] Bcolj;
 #else
       cblas_dgemm(CblasRowMajor, tranA ? CblasTrans : CblasNoTrans,
                   tranB ? CblasTrans : CblasNoTrans, M, N, K, 1.0, data, cols,
