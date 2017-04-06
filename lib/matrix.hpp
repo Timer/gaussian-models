@@ -150,12 +150,12 @@ public:
     return false;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     const int MS_PER_10M_ELEMS = 16;
-    return true;  // TODO: measure
+    return linear ? false : rows * cols >= _1M;  // TODO: measure
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     const int MS_PER_1M_CPU_MULT = 590;
     const int MS_PER_1M_MULT = 466;
     const int MS_PER_10M_ELEMS = 55;
-    return linear?false:m*n >=_1M;  // TODO: measure
+    return linear ? false : rows * col >= _1M;
 #else
     return false;
 #endif
@@ -946,10 +946,21 @@ public:
     } else {
       decelerate();
       B->decelerate();
-
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+      auto C = std::make_shared<Matrix>(A.rows, B.cols);
+      for (auto r = 0; r < C->rows; ++r) {
+        for (auto c = 0; c < C->cols; ++c) {
+#pragma omp parallel for
+          for (auto inner = 0; inner < A.cols; ++inner) {
+            C->data[_matrix_index_for(C->cols, r, c)] += A.data[_matrix_index_for(A.cols, r, inner)] * B.data[_matrix_index_for(B.cols, inner, c)];
+          }
+        }
+      }
+#else
       cblas_dgemm(CblasRowMajor, tranA ? CblasTrans : CblasNoTrans,
                   tranB ? CblasTrans : CblasNoTrans, M, N, K, 1.0, data, cols,
                   B->data, B->cols, 0.0, C->data, C->cols);
+#endif
     }
     return C;
   }
