@@ -218,7 +218,7 @@ public:
     */
     const int MS_PER_1M_CPU_MULT = 367;
     const int MS_PER_10M_ELEMS = 16;
-    return linear ? false : rows * cols >= 204800;
+    return linear ? true : rows * cols >= 204800;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     const int MS_PER_1M_CPU_MULT = 590;
     const int MS_PER_1M_MULT = 466;
