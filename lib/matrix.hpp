@@ -947,7 +947,12 @@ public:
       decelerate();
       B->decelerate();
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-      auto C = std::make_shared<Matrix>(rows, B->cols);
+      if (tranA) {
+        return transpose() * B;
+      }
+      if (tranB) {
+        return *this * B->transpose();
+      }
       for (auto r = 0; r < C->rows; ++r) {
         for (auto c = 0; c < C->cols; ++c) {
 #pragma omp parallel for
