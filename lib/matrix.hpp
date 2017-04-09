@@ -1060,6 +1060,8 @@ bool operator==(const SMatrix m1, const SMatrix m2) {
   }
   m1->decelerate();
   m2->decelerate();
+  m1->print();
+  m2->print();
   for (auto i = 0; i < m1->rows * m1->cols; ++i) {
     if (m1->data[i] != m2->data[i]) {
       return false;
