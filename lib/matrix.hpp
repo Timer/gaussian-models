@@ -75,6 +75,9 @@ public:
   int rows, cols;
   double *data;
 
+  friend SMatrix operator+(const SMatrix &A, const SMatrix &B);
+  friend SMatrix operator-(const SMatrix &A, const SMatrix &B);
+
   Matrix(int rows, int cols, bool init) {
     assert(rows >= 0 && cols >= 0);
     this->rows = rows;
