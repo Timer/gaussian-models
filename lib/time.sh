@@ -9,6 +9,6 @@ do
   for testNo in {1..5}
   do
     echo "Test #$testNo for $procs processors"
-    { time ./k2.out -d data.csv -p 12 -t 16 ; } 2> "results/procs-$procs-$testNo.out"
+    { time ./k2.out -d data.csv -p $procs -t 16 ; } 2> "results/procs-$procs-$testNo.out"
   done
 done
