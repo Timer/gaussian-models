@@ -15,13 +15,13 @@ __global__ void vec_lgamma(double *a, double *c, const unsigned int n) {
   }
 }
 
-__host__ double *cu_lgammed(const int rows, const int cols, double *oData) {
+__host__ double *cu_lgammed(const int rows, const int cols, double *iData) {
   auto N = rows * cols;
   double *C_accelerate_data = nullptr;
   cudaMalloc((void **) &C_accelerate_data, rows * cols * sizeof(double));
   int blocks, threads;
   getLaunchConfiguration(vec_lgamma, N, &blocks, &threads);
-  vec_lgamma<<<blocks, threads>>>(oData, C_accelerate_data, N);
+  vec_lgamma<<<blocks, threads>>>(iData, C_accelerate_data, N);
   cudaDeviceSynchronize();
   return C_accelerate_data;
 }
