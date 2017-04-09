@@ -1020,9 +1020,13 @@ SMatrix operator-(const SMatrix &A, const SMatrix &B) {
   assert(A->rows == B->rows && A->cols == B->cols);
   auto C = std::make_shared<Matrix>(A->rows, A->cols, false);
   if (A->shouldAccelerate(true)) {
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     A->accelerate();
     B->accelerate();
     C->inherit(cu_sub(A->rows, A->cols, A->accelerate_data, B->accelerate_data));
+#else
+    assert(false);
+#endif
   } else {
     A->decelerate();
     B->decelerate();
@@ -1041,9 +1045,13 @@ SMatrix operator+(const SMatrix &A, const SMatrix &B) {
   assert(A->rows == B->rows && A->cols == B->cols);
   auto C = std::make_shared<Matrix>(A->rows, A->cols, false);
   if (A->shouldAccelerate(true)) {
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     A->accelerate();
     B->accelerate();
     C->inherit(cu_add(A->rows, A->cols, A->accelerate_data, B->accelerate_data));
+#else
+    assert(false);
+#endif
   } else {
     A->decelerate();
     B->decelerate();
