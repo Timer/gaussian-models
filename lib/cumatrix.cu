@@ -29,14 +29,14 @@ __host__ double *cu_lgammed(const int rows, const int cols, double *iData) {
 __global__ void vec_add(double *a, double *b, double *c, const unsigned int n) {
   const long idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < n) {
-    c[idx] = a[idx] + b[odx];
+    c[idx] = a[idx] + b[idx];
   }
 }
 
 __global__ void vec_sub(double *a, double *b, double *c, const unsigned int n) {
   const long idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < n) {
-    c[idx] = a[idx] - b[odx];
+    c[idx] = a[idx] - b[idx];
   }
 }
 

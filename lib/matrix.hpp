@@ -1013,7 +1013,7 @@ SMatrix eye(int rows, int cols) {
   return M;
 }
 
-SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
+SMatrix operator-(const SMatrix &A, const SMatrix &B) {
   assert(A->rows == B->rows && A->cols == B->cols);
   auto C = std::make_shared<Matrix>(A->rows, A->cols, false);
   if (A->shouldAccelerate(true)) {
