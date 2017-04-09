@@ -1014,15 +1014,20 @@ SMatrix eye(int rows, int cols) {
 }
 
 SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
-  assert(m1->rows == m2->rows && m1->cols == m2->cols);
-  m1->decelerate();
-  m2->decelerate();
-
-  auto rm = std::make_shared<Matrix>(m1->rows, m1->cols, false);
-  for (auto i = 0; i < m1->rows * m2->cols; ++i) {
-    rm->data[i] = m1->data[i] - m2->data[i];
+  assert(A->rows == B->rows && A->cols == B->cols);
+  auto C = std::make_shared<Matrix>(A->rows, A->cols, false);
+  if (A->shouldAccelerate(true)) {
+    A->accelerate();
+    B->accelerate();
+    C->inherit(cu_sub(rows, cols, A->data, B->data));
+  } else {
+    A->decelerate();
+    B->decelerate();
+    for (auto i = 0; i < A->rows * A->cols; ++i) {
+      C->data[i] = A->data[i] - B->data[i];
+    }
   }
-  return rm;
+  return C;
 }
 
 SMatrix operator*(const SMatrix &m1, const SMatrix &m2) {
@@ -1031,11 +1036,17 @@ SMatrix operator*(const SMatrix &m1, const SMatrix &m2) {
 
 SMatrix operator+(const SMatrix &A, const SMatrix &B) {
   assert(A->rows == B->rows && A->cols == B->cols);
-  A->decelerate();
-  B->decelerate();
   auto C = std::make_shared<Matrix>(A->rows, A->cols, false);
-  for (auto i = 0; i < A->rows * A->cols; ++i) {
-    C->data[i] = A->data[i] + B->data[i];
+  if (A->shouldAccelerate(true)) {
+    A->accelerate();
+    B->accelerate();
+    C->inherit(cu_add(rows, cols, A->data, B->data));
+  } else {
+    A->decelerate();
+    B->decelerate();
+    for (auto i = 0; i < A->rows * A->cols; ++i) {
+      C->data[i] = A->data[i] + B->data[i];
+    }
   }
   return C;
 }
