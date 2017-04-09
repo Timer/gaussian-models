@@ -1019,7 +1019,7 @@ SMatrix operator-(const SMatrix &m1, const SMatrix &m2) {
   if (A->shouldAccelerate(true)) {
     A->accelerate();
     B->accelerate();
-    C->inherit(cu_sub(rows, cols, A->data, B->data));
+    C->inherit(cu_sub(A->rows, A->cols, A->data, B->data));
   } else {
     A->decelerate();
     B->decelerate();
@@ -1040,7 +1040,7 @@ SMatrix operator+(const SMatrix &A, const SMatrix &B) {
   if (A->shouldAccelerate(true)) {
     A->accelerate();
     B->accelerate();
-    C->inherit(cu_add(rows, cols, A->data, B->data));
+    C->inherit(cu_add(A->rows, A->cols, A->data, B->data));
   } else {
     A->decelerate();
     B->decelerate();
