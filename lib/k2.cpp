@@ -11,7 +11,7 @@
 #include "matrix.hpp"
 #include "rand.hpp"
 
-#define VERBOSE 1
+#define VERBOSE 0
 #define SAVE_NETWORKS 0
 
 double dirichlet_score_family(SMatrix counts, SCPD cpd) {
