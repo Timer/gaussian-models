@@ -951,31 +951,9 @@ public:
     } else {
       decelerate();
       B->decelerate();
-#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-      if (tranA) {
-        return transpose()->multiply(B, false, tranB);
-      } else if (tranB) {
-        return multiply(B->transpose(), false, false);
-      }
-      double *Bcolj = new double[cols];
-      for (int j = 0; j < B->cols; j++) {
-        for (int k = 0; k < cols; k++) {
-          Bcolj[k] = B->data[_matrix_index_for(B->cols, k, j)];
-        }
-        for (int i = 0; i < rows; i++) {
-          double s = 0;
-          for (int k = 0; k < cols; k++) {
-            s += data[_matrix_index_for(cols, i, k)] * Bcolj[k];
-          }
-          C->data[_matrix_index_for(C->cols, i, j)] = s;
-        }
-      }
-      delete[] Bcolj;
-#else
       cblas_dgemm(CblasRowMajor, tranA ? CblasTrans : CblasNoTrans,
                   tranB ? CblasTrans : CblasNoTrans, M, N, K, 1.0, data, cols,
                   B->data, B->cols, 0.0, C->data, C->cols);
-#endif
     }
     return C;
   }
