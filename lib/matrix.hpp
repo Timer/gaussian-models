@@ -17,10 +17,11 @@
 
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
+#else
+#include <cblas.h>
 #endif
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-#include <cblas.h>
 #include <cublas_v2.h>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
