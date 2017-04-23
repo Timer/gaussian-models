@@ -1,5 +1,6 @@
 #include <cstdio>
 #include "scggm.hpp"
+#include "scggm_cov_decompose.hpp"
 #include "scggm_indirect_SNP_decompose.hpp"
 #include "scggm_indirect_SNP_overall.hpp"
 #include "shared.hpp"
@@ -42,22 +43,22 @@ int main(int argc, char *argv[]) {
       k);
   auto Beta_k = scggm_indirect_SNP_decompose(opt.Theta, k);
 
-  /*
-  % decomposition of gene-expression covariance
-  Cov = scggm_cov_decompose(opt.Theta, xtrain, ytrain);
+  // decomposition of gene-expression covariance
+  auto Cov = scggm_cov_decompose(opt.Theta, xtrain, ytrain);
 
-  if ~exist('results/demo', 'dir')
-        mkdir('results/demo');
-  end
-  dlmwrite('./results/demo/optimal_Theta_xy.txt', opt.Theta.xy, '\t');
-  dlmwrite('./results/demo/optimal_Theta_yy.txt', opt.Theta.yy, '\t');
-  dlmwrite('./results/demo/optimal_intercept.txt', opt.intercept, '\t');
-  dlmwrite('./results/demo/Beta.txt', Beta, '\t');
-  dlmwrite(['./results/demo/Beta_', num2str(k), '.txt'], Beta_k, '\t');
-  dlmwrite('./results/demo/Cov_Overall.txt', Cov.Overall, '\t');
-  dlmwrite('./results/demo/Cov_Network_Induced.txt', Cov.Network_Induced, '\t');
-  dlmwrite('./results/demo/Cov_SNP_Induced.txt', Cov.SNP_Induced, '\t');
-  */
+  //TODO:
+  //if ~exist('results/demo', 'dir')
+  //  mkdir('results/demo');
+  //end
+
+  opt.Theta.xy->save("./results/demo/optimal_Theta_xy.txt");
+  opt.Theta.yy->save("./results/demo/optimal_Theta_yy.txt");
+  opt.intercept->save("./results/demo/optimal_intercept.txt");
+  Beta->save("./results/demo/Beta.txt");
+  Beta_k->save("./results/demo/Beta_k.txt");
+  Cov.Overall->save("./results/demo/Cov_Overall.txt");
+  Cov.Network_Induced->save("./results/demo/Cov_Network_Induced.txt");
+  Cov.SNP_Induced->save("./results/demo/Cov_SNP_Induced.txt");
   event_stop();
   return 0;
 }

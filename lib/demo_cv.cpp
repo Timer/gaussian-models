@@ -48,21 +48,21 @@ int main(int argc, char *argv[]) {
   // decomposition of gene-expression covariance
   auto Cov = scggm_cov_decompose(opt.Theta, xtrain, ytrain);
 
-  /*
-  if ~exist('results/demo_cv', 'dir')
-    mkdir('results/demo_cv');
-  end
+  //TODO:
+  //if ~exist('results/demo_cv', 'dir')
+  //  mkdir('results/demo_cv');
+  //end
 
-  dlmwrite('./results/demo_cv/optimal_Theta_xy.txt', opt.Theta.xy, '\t');
-  dlmwrite('./results/demo_cv/optimal_Theta_yy.txt', opt.Theta.yy, '\t');
-  dlmwrite('./results/demo_cv/optimal_intercept.txt', opt.intercept, '\t');
-  dlmwrite('./results/demo_cv/optimal_lambdas.txt', opt.lambdas, '\t');
-  dlmwrite('./results/demo_cv/Beta.txt', Beta, '\t');
-  dlmwrite(['./results/demo_cv/Beta_', num2str(k), '.txt'], Beta_k, '\t');
-  dlmwrite('./results/demo_cv/Cov_Overall.txt', Cov.Overall, '\t');
-  dlmwrite('./results/demo_cv/Cov_Network_Induced.txt', Cov.Network_Induced, '\t');
-  dlmwrite('./results/demo_cv/Cov_SNP_Induced.txt', Cov.SNP_Induced, '\t');
-  */
+  opt.Theta.xy->save("./results/demo_cv/optimal_Theta_xy.txt");
+  opt.Theta.yy->save("./results/demo_cv/optimal_Theta_yy.txt");
+  opt.intercept->save("./results/demo_cv/optimal_intercept.txt");
+  double la[1][2] = {{opt.lambdas[0], opt.lambdas[1]}};
+  std::make_shared<Matrix>(la)->save("./results/demo_cv/optimal_lambdas.txt");
+  Beta->save("./results/demo_cv/Beta.txt");
+  Beta_k->save("./results/demo_cv/Beta_k.txt");
+  Cov.Overall->save("./results/demo_cv/Cov_Overall.txt");
+  Cov.Network_Induced->save("./results/demo_cv/Cov_Network_Induced.txt");
+  Cov.SNP_Induced->save("./results/demo_cv/Cov_SNP_Induced.txt");
 
   event_stop();
   return 0;
