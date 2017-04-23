@@ -63,6 +63,15 @@ void checkClError(cl_int res) {
 }
 #endif
 
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+void checkCuError(cudaError_t res) {
+  if (res != cudaSuccess) {
+    printf("CUDA err: %s\n", cudaGetErrorString(res));
+    assert(res == cudaSuccess);
+  }
+}
+#endif
+
 class Matrix {
 private:
   bool accelerated = false;
@@ -152,7 +161,7 @@ public:
     }
 #endif
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-    cudaFree(accelerate_data);
+    checkCuError(cudaFree(accelerate_data));
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     clReleaseMemObject(accelerate_data);
 #else
@@ -193,13 +202,9 @@ public:
     assert(false);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     if (accelerate_data == nullptr) {
-      cudaMalloc((void **) &accelerate_data, size);
+      checkCuError(cudaMalloc((void **) &accelerate_data, size));
     }
-    auto res = cudaMemcpy(accelerate_data, data, size, cudaMemcpyHostToDevice);
-    if (res != cudaSuccess) {
-      printf("cudaMemcpy Input %s\n", cudaGetErrorString(res));
-      assert(false);
-    }
+    checkCuError(cudaMemcpy(accelerate_data, data, size, cudaMemcpyHostToDevice));
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     if (accelerate_data == nullptr) {
       cl_int err;
@@ -224,11 +229,7 @@ public:
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     assert(false);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-    auto res = cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost);
-    if (res != cudaSuccess) {
-      printf("cudaMemcpy Input %s\n", cudaGetErrorString(res));
-      assert(false);
-    }
+    checkCuError(cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost));
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     auto res = clFinish(cl_queue);
     checkClError(res);
@@ -928,7 +929,7 @@ public:
       cublasHandle_t handle;
       cublasCreate(&handle);  // TODO: store and reuse these handle[s]
       double *C_accelerate_data = nullptr;
-      cudaMalloc((void **) &C_accelerate_data, M * N * sizeof(double));
+      checkCuError(cudaMalloc((void **) &C_accelerate_data, M * N * sizeof(double)));
       // We transpose when we don't need to transpose because cublas expects
       // col major but we store in row major.
       const auto alpha = 1.0, beta = 0.0;
