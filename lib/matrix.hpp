@@ -172,7 +172,7 @@ public:
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     const int MS_PER_1M_CPU_MULT = 367;
     const int MS_PER_10M_ELEMS = 16;
-    return linear ? true : rows * cols >= 204800;
+    return linear ? true : rows * cols >= 204800 && rows * cols <= 6553600;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     const int MS_PER_1M_CPU_MULT = 590;
     const int MS_PER_1M_MULT = 466;
@@ -195,7 +195,11 @@ public:
     if (accelerate_data == nullptr) {
       cudaMalloc((void **) &accelerate_data, size);
     }
-    cudaMemcpy(accelerate_data, data, size, cudaMemcpyHostToDevice);
+    auto res = cudaMemcpy(accelerate_data, data, size, cudaMemcpyHostToDevice);
+    if (res != cudaSuccess) {
+      printf("cudaMemcpy Input %s\n", cudaGetErrorString(status));
+      assert(false);
+    }
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     if (accelerate_data == nullptr) {
       cl_int err;
@@ -220,7 +224,11 @@ public:
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     assert(false);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-    cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost);
+    auto res = cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost);
+    if (res != cudaSuccess) {
+      printf("cudaMemcpy Input %s\n", cudaGetErrorString(status));
+      assert(false);
+    }
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     auto res = clFinish(cl_queue);
     checkClError(res);
