@@ -197,7 +197,7 @@ public:
     }
     auto res = cudaMemcpy(accelerate_data, data, size, cudaMemcpyHostToDevice);
     if (res != cudaSuccess) {
-      printf("cudaMemcpy Input %s\n", cudaGetErrorString(status));
+      printf("cudaMemcpy Input %s\n", cudaGetErrorString(res));
       assert(false);
     }
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
@@ -226,7 +226,7 @@ public:
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     auto res = cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost);
     if (res != cudaSuccess) {
-      printf("cudaMemcpy Input %s\n", cudaGetErrorString(status));
+      printf("cudaMemcpy Input %s\n", cudaGetErrorString(res));
       assert(false);
     }
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
