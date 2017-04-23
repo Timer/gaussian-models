@@ -161,6 +161,7 @@ public:
     }
 #endif
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    cudaDeviceSynchronize();
     checkCuError(cudaFree(accelerate_data));
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     clReleaseMemObject(accelerate_data);
