@@ -64,7 +64,7 @@ void checkClError(cl_int res) {
 #endif
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-void checkCuError(char *msg, cudaError_t res) {
+void checkCuError(cudaError_t res, char *msg) {
   if (res != cudaSuccess) {
     printf("CUDA err: %s (%s)\n", cudaGetErrorString(res), msg);
     assert(res == cudaSuccess);
