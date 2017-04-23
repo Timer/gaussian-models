@@ -47,6 +47,22 @@ struct Cholesky {
   bool error = false;
 };
 
+#if ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+void checkClError(cl_int res) {
+  if (res != CL_SUCCESS) {
+    cl_int errs[] = {CL_INVALID_COMMAND_QUEUE, CL_INVALID_CONTEXT, CL_INVALID_MEM_OBJECT, CL_INVALID_VALUE, CL_INVALID_EVENT_WAIT_LIST, CL_MEM_OBJECT_ALLOCATION_FAILURE, CL_OUT_OF_HOST_MEMORY};
+    std::string strs[] = {"CL_INVALID_COMMAND_QUEUE", "CL_INVALID_CONTEXT", "CL_INVALID_MEM_OBJECT", "CL_INVALID_VALUE", "CL_INVALID_EVENT_WAIT_LIST", "CL_MEM_OBJECT_ALLOCATION_FAILURE", "CL_OUT_OF_HOST_MEMORY"};
+    for (auto i = 0; i < 7; ++i) {
+      if (res == errs[i]) {
+        puts(strs[i].c_str());
+        break;
+      }
+    }
+    assert(res == CL_SUCCESS);
+  }
+}
+#endif
+
 class Matrix {
 private:
   bool accelerated = false;
@@ -161,7 +177,7 @@ public:
     const int MS_PER_1M_CPU_MULT = 590;
     const int MS_PER_1M_MULT = 466;
     const int MS_PER_10M_ELEMS = 55;
-    return linear ? false : rows * col >= _1M;
+    return linear ? false : rows * cols >= _1M;
 #else
     return false;
 #endif
@@ -194,22 +210,6 @@ public:
 
     accelerated = true;
   }
-
-#if ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
-  void checkClError(cl_int res) {
-    if (res != CL_SUCCESS) {
-      cl_int errs[] = {CL_INVALID_COMMAND_QUEUE, CL_INVALID_CONTEXT, CL_INVALID_MEM_OBJECT, CL_INVALID_VALUE, CL_INVALID_EVENT_WAIT_LIST, CL_MEM_OBJECT_ALLOCATION_FAILURE, CL_OUT_OF_HOST_MEMORY};
-      std::string strs[] = {"CL_INVALID_COMMAND_QUEUE", "CL_INVALID_CONTEXT", "CL_INVALID_MEM_OBJECT", "CL_INVALID_VALUE", "CL_INVALID_EVENT_WAIT_LIST", "CL_MEM_OBJECT_ALLOCATION_FAILURE", "CL_OUT_OF_HOST_MEMORY"};
-      for (auto i = 0; i < 7; ++i) {
-        if (res == errs[i]) {
-          puts(strs[i].c_str());
-          break;
-        }
-      }
-      assert(res == CL_SUCCESS);
-    }
-  }
-#endif
 
   void decelerate() {
     if (!accelerated) {
@@ -995,14 +995,51 @@ SMatrix eye(int rows, int cols) {
   return M;
 }
 
+#if ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+const char *subKernelSource =
+    "\n"
+    "#pragma OPENCL EXTENSION cl_khr_fp64 : enable    \n"
+    "__kernel void vec_sub(__global double *a,        \n"
+    "                      __global double *b,        \n"
+    "                      __global double *c,        \n"
+    "                      const unsigned int n)      \n"
+    "{                                                \n"
+    "  const unsigned int id = get_global_id(0);      \n"
+    "  if (id < n)                                    \n"
+    "    c[id] = a[id] - b[id];                       \n"
+    "}                                                \n"
+    "\n";
+#endif
+
 SMatrix operator-(const SMatrix &A, const SMatrix &B) {
   assert(A->rows == B->rows && A->cols == B->cols);
   auto C = std::make_shared<Matrix>(A->rows, A->cols, false);
   if (A->shouldAccelerate(true)) {
-#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     A->accelerate();
     B->accelerate();
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     C->inherit(cu_sub(A->rows, A->cols, A->accelerate_data, B->accelerate_data));
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+    auto N = A->rows * A->cols;
+    cl_int err;
+    cl_event event;
+    auto C_accelerate_data = clCreateBuffer(
+        cl_ctx, CL_MEM_WRITE_ONLY, A->rows * A->cols * sizeof(double), nullptr, &err);
+    checkClError(err);
+    auto program = clCreateProgramWithSource(cl_ctx, 1, (const char **) &subKernelSource, NULL, &err);
+    clBuildProgram(program, 0, nullptr, nullptr, nullptr, nullptr);
+    auto kernel = clCreateKernel(program, "vec_sub", &err);  //TODO: reuse kernel (& program)
+    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &A->accelerate_data);
+    err = clSetKernelArg(kernel, 1, sizeof(cl_mem), &B->accelerate_data);
+    err = clSetKernelArg(kernel, 2, sizeof(cl_mem), &C_accelerate_data);
+    err = clSetKernelArg(kernel, 3, sizeof(unsigned int), &N);
+    size_t localSize = 64;
+    size_t globalSize = std::ceil(N / (float) localSize) * localSize;
+    err = clEnqueueNDRangeKernel(cl_queue, kernel, 1, nullptr, &globalSize, &localSize, 0, nullptr, nullptr);
+    clFinish(cl_queue);
+    clReleaseProgram(program);
+    clReleaseKernel(kernel);
+    C->inherit(C_accelerate_data);
 #else
     assert(false);
 #endif
@@ -1020,14 +1057,51 @@ SMatrix operator*(const SMatrix &m1, const SMatrix &m2) {
   return m1->multiply(m2);
 }
 
+#if ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+const char *addKernelSource =
+    "\n"
+    "#pragma OPENCL EXTENSION cl_khr_fp64 : enable    \n"
+    "__kernel void vec_add(__global double *a,        \n"
+    "                      __global double *b,        \n"
+    "                      __global double *c,        \n"
+    "                      const unsigned int n)      \n"
+    "{                                                \n"
+    "  const unsigned int id = get_global_id(0);      \n"
+    "  if (id < n)                                    \n"
+    "    c[id] = a[id] + b[id];                       \n"
+    "}                                                \n"
+    "\n";
+#endif
+
 SMatrix operator+(const SMatrix &A, const SMatrix &B) {
   assert(A->rows == B->rows && A->cols == B->cols);
   auto C = std::make_shared<Matrix>(A->rows, A->cols, false);
   if (A->shouldAccelerate(true)) {
-#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     A->accelerate();
     B->accelerate();
+#if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     C->inherit(cu_add(A->rows, A->cols, A->accelerate_data, B->accelerate_data));
+#elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+    auto N = A->rows * A->cols;
+    cl_int err;
+    cl_event event;
+    auto C_accelerate_data = clCreateBuffer(
+        cl_ctx, CL_MEM_WRITE_ONLY, A->rows * A->cols * sizeof(double), nullptr, &err);
+    checkClError(err);
+    auto program = clCreateProgramWithSource(cl_ctx, 1, (const char **) &addKernelSource, NULL, &err);
+    clBuildProgram(program, 0, nullptr, nullptr, nullptr, nullptr);
+    auto kernel = clCreateKernel(program, "vec_add", &err);  //TODO: reuse kernel (& program)
+    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &A->accelerate_data);
+    err = clSetKernelArg(kernel, 1, sizeof(cl_mem), &B->accelerate_data);
+    err = clSetKernelArg(kernel, 2, sizeof(cl_mem), &C_accelerate_data);
+    err = clSetKernelArg(kernel, 3, sizeof(unsigned int), &N);
+    size_t localSize = 64;
+    size_t globalSize = std::ceil(N / (float) localSize) * localSize;
+    err = clEnqueueNDRangeKernel(cl_queue, kernel, 1, nullptr, &globalSize, &localSize, 0, nullptr, nullptr);
+    clFinish(cl_queue);
+    clReleaseProgram(program);
+    clReleaseKernel(kernel);
+    C->inherit(C_accelerate_data);
 #else
     assert(false);
 #endif
