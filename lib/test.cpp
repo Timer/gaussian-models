@@ -210,7 +210,7 @@ int main(int argc, char *argv[]) {
   puts("Testing CUDA");
 #endif
 
-  for (int m = 1; m < 65536; m *= 2) {
+  for (int m = 1; m <= 65536; m *= 2) {
     auto s = now(), e = now();
     printf("Prepping %dx100 test ...\n", m);
     auto
