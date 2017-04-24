@@ -19,6 +19,10 @@ extern cl_command_queue cl_queue;
 cl_context cl_ctx;
 cl_command_queue cl_queue;
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+#include <cublas_v2.h>
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+
 extern cublasHandle_t cu_handle;
 cublasHandle_t cu_handle;
 #endif
