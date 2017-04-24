@@ -200,7 +200,7 @@ public:
       return;
     }
 
-    auto size = rows * cols * sizeof(data);
+    auto size = rows * cols * sizeof(double);
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     assert(false);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
@@ -229,7 +229,7 @@ public:
       return;
     }
 
-    auto size = rows * cols * sizeof(data);
+    auto size = rows * cols * sizeof(double);
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     assert(false);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
