@@ -945,7 +945,7 @@ public:
       double *C_accelerate_data_tran = nullptr;
       checkCuError(cudaMalloc((void **)&C_accelerate_data_tran, M * N * sizeof(double)), "Alloc 2 in multiply()");
       cudaDeviceSynchronize();
-      cublasSgeam(handle, CUBLAS_OP_T, CUBLAS_OP_N, M, N, &alpha, C_accelerate_data, N, &beta, C_accelerate_data, M, C_accelerate_data_tran, M);
+      cublasSgeam(cu_handle, CUBLAS_OP_T, CUBLAS_OP_N, M, N, &alpha, C_accelerate_data, N, &beta, C_accelerate_data, M, C_accelerate_data_tran, M);
       cudaDeviceSynchronize();
       checkCuError(cudaFree(C_accelerate_data), "Free in multiply()");
       C->inherit(C_accelerate_data_tran);
