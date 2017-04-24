@@ -936,7 +936,7 @@ public:
       checkCuError(cudaMalloc((void **) &C_accelerate_data, M * N * sizeof(double)), "Alloc in multiply()");
       // We transpose when we don't need to transpose because cublas expects
       // col major but we store in row major.
-      const auto alpha = 1.0, beta = 0.0;
+      const double alpha = 1.0, beta = 0.0;
       cudaDeviceSynchronize();
       cublasDgemm(cu_handle, tranA ? CUBLAS_OP_N : CUBLAS_OP_T,
                   tranB ? CUBLAS_OP_N : CUBLAS_OP_T, M, N, K, &alpha,
