@@ -18,6 +18,9 @@ extern cl_command_queue cl_queue;
 
 cl_context cl_ctx;
 cl_command_queue cl_queue;
+#elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+extern cublasHandle_t cu_handle;
+cublasHandle_t cu_handle;
 #endif
 
 void event_start() {
@@ -46,6 +49,8 @@ void event_start() {
   props[1] = (cl_context_properties) platform;
   cl_ctx = clCreateContext(props, 1, &device, NULL, NULL, &err);
   cl_queue = clCreateCommandQueue(cl_ctx, device, 0, &err);
+#elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+  cublasCreate(&cu_handle);  // TODO: store and reuse these handle[s]
 #endif
 }
 
@@ -54,6 +59,8 @@ void event_stop() {
   clblasTeardown();
   clReleaseCommandQueue(cl_queue);
   clReleaseContext(cl_ctx);
+#elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+  cublasDestroy(cu_handle);
 #endif
 }
 

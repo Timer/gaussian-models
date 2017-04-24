@@ -932,20 +932,16 @@ public:
       B->accelerate();
 
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
-      cublasHandle_t handle;
-      cublasCreate(&handle);  // TODO: store and reuse these handle[s]
       double *C_accelerate_data = nullptr;
       checkCuError(cudaMalloc((void **) &C_accelerate_data, M * N * sizeof(double)), "Alloc in multiply()");
       // We transpose when we don't need to transpose because cublas expects
       // col major but we store in row major.
       const auto alpha = 1.0, beta = 0.0;
-      cublasDgemm(handle, tranA ? CUBLAS_OP_N : CUBLAS_OP_T,
+      cublasDgemm(cu_handle, tranA ? CUBLAS_OP_N : CUBLAS_OP_T,
                   tranB ? CUBLAS_OP_N : CUBLAS_OP_T, M, N, K, &alpha,
                   accelerate_data, cols, B->accelerate_data, B->cols, &beta,
                   C_accelerate_data, C->cols);
       C->inherit(C_accelerate_data);
-      cudaDeviceSynchronize();
-      cublasDestroy(handle);
       cudaDeviceSynchronize();
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
       cl_int err;
