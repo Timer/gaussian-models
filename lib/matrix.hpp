@@ -942,8 +942,13 @@ public:
                   tranB ? CUBLAS_OP_N : CUBLAS_OP_T, M, N, K, &alpha,
                   accelerate_data, cols, B->accelerate_data, B->cols, &beta,
                   C_accelerate_data, C->cols);
+      double *C_accelerate_data_tran = nullptr;
+      checkCuError(cudaMalloc((void **)&C_accelerate_data_tran, M * N * sizeof(double)), "Alloc 2 in multiply()");
       cudaDeviceSynchronize();
-      C->inherit(C_accelerate_data);
+      cublasSgeam(handle, CUBLAS_OP_T, CUBLAS_OP_N, M, N, &alpha, C_accelerate_data, N, &beta, C_accelerate_data, M, C_accelerate_data_tran, M);
+      cudaDeviceSynchronize();
+      checkCuError(cudaFree(C_accelerate_data), "Free in multiply()");
+      C->inherit(C_accelerate_data_tran);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
       cl_int err;
       cl_event event;
