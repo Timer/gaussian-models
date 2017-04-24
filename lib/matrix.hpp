@@ -940,8 +940,8 @@ public:
       cudaDeviceSynchronize();
       cublasDgemm(cu_handle, tranA ? CUBLAS_OP_N : CUBLAS_OP_T,
                   tranB ? CUBLAS_OP_N : CUBLAS_OP_T, M, N, K, &alpha,
-                  accelerate_data, cols, B->accelerate_data, B->cols, &beta,
-                  C_accelerate_data, C->cols);
+                  accelerate_data, rows, B->accelerate_data, B->rows, &beta,
+                  C_accelerate_data, C->rows);
       cudaDeviceSynchronize();
       C->inherit(C_accelerate_data);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
