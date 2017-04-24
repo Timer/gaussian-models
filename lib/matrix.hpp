@@ -163,6 +163,7 @@ public:
 #if ACCELERATE_MODE == ACCELERATE_MODE_CUDA
     cudaDeviceSynchronize();
     checkCuError(cudaFree(accelerate_data), "Freeing in ~Matrix()");
+    accelerate_data = nullptr;
     puts("Free'd");
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     clReleaseMemObject(accelerate_data);
