@@ -206,14 +206,15 @@ public:
       checkCuError(cudaMalloc((void **) &accelerate_data, size), "Alloc in accelerate()");
     }
     checkCuError(cudaMemcpy(accelerate_data, data, size, cudaMemcpyHostToDevice), "Memcpy in accelerate()");
+    cudaDeviceSynchronize();
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
+    cl_int err;
     if (accelerate_data == nullptr) {
-      cl_int err;
       accelerate_data =
           clCreateBuffer(cl_ctx, CL_MEM_READ_ONLY, size, NULL, &err);
-      err = clEnqueueWriteBuffer(cl_queue, accelerate_data, CL_TRUE, 0, size,
-                                 data, 0, NULL, NULL);
     }
+    err = clEnqueueWriteBuffer(cl_queue, accelerate_data, CL_TRUE, 0, size,
+                               data, 0, NULL, NULL);
 #else
     assert(false);
 #endif
@@ -230,7 +231,9 @@ public:
 #if ACCELERATE_MODE == ACCELERATE_MODE_NONE
     assert(false);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_CUDA
+    cudaDeviceSynchronize();
     checkCuError(cudaMemcpy(data, accelerate_data, size, cudaMemcpyDeviceToHost), "Copy in decelerate()");
+    cudaDeviceSynchronize();
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
     auto res = clFinish(cl_queue);
     checkClError(res);
@@ -939,7 +942,9 @@ public:
                   accelerate_data, cols, B->accelerate_data, B->cols, &beta,
                   C_accelerate_data, C->cols);
       C->inherit(C_accelerate_data);
+      cudaDeviceSynchronize();
       cublasDestroy(handle);
+      cudaDeviceSynchronize();
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
       cl_int err;
       cl_event event;
