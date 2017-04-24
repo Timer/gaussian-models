@@ -941,8 +941,8 @@ public:
                   tranB ? CUBLAS_OP_N : CUBLAS_OP_T, M, N, K, &alpha,
                   accelerate_data, cols, B->accelerate_data, B->cols, &beta,
                   C_accelerate_data, C->cols);
-      C->inherit(C_accelerate_data);
       cudaDeviceSynchronize();
+      C->inherit(C_accelerate_data);
 #elif ACCELERATE_MODE == ACCELERATE_MODE_OPENCL
       cl_int err;
       cl_event event;
